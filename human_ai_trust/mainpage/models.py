@@ -28,14 +28,14 @@ class ModelUserResponse(models.Model):
 	)
 
 	# linking fields
-	field_data_point_id = models.ForeignKey('ModelDataPoint', on_delete=models.SET_NULL, null=True)
+	field_data_point_string = models.CharField(max_length=20, help_text="Unique string to specify the input feature combo")
 
 	# Fields
-	field_ml_accuracy = models.DecimalField(max_digits=4, decimal_places=4, "ML accuracy at time of question")
+	field_ml_accuracy = models.DecimalField(max_digits=4, decimal_places=4, help_text="ML accuracy at time of question")
 	field_ml_confidence = models.DecimalField(max_digits=4, decimal_places=4, help_text="ML confidence at time of question")
-	field_ml_prediction = models.BinaryField(help_text="Actual ML prediction")
-	field_user_prediction = models.BinaryField(help_text="User prediction")
-	field_user_did_update = models.BinaryField(help_text="Whether or not user updated the model")
+	field_ml_prediction = models.IntegerField(help_text="Actual ML prediction")
+	field_user_prediction = models.IntegerField(help_text="User prediction")
+	field_user_did_update = models.IntegerField(help_text="Whether or not user updated the model")
 
 	field_user_disagree_reason_choices = models.CharField(max_length=1, choices=USER_RESPONSES, blank=True, 
 				default='m', help_text='If user does not use model prediction, ask why')
@@ -53,3 +53,5 @@ class ModelUserResponse(models.Model):
 	def __str__(self):
 		"""String for representing the MyModelName object (in Admin site etc.)."""
 		return self.my_field_name
+
+

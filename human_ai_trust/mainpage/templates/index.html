@@ -1,0 +1,22 @@
+{% extends "template.html" %}
+
+{% block content %}
+  <h1>Experiment Home</h1>
+  <p>Welcome to the Human AI Trust Experiment, an experience developed by <em>Kavya, Eric, and Jackson</em>!</p>
+  <h2>Dynamic content</h2>
+  <p>The database has the following record count: {{ num_responses }}</p>
+    
+    {% for response in user_responses %}
+    <ul>
+      <li>{{ response.field_data_point_string }}</li>
+      <li>{{ response.field_ml_accuracy }}</li>
+      <li>{{ response.field_ml_confidence }}</li>
+      <li>{{ response.field_ml_prediction }}</li>
+      <li>{{ response.field_user_prediction }}</li>
+      <li>{{ response.field_user_did_update }}</li>
+      <li>{{ response.field_user_disagree_reason_choices }}</li>
+      <li>{{ response.field_user_disagree_reason_freetext }}</li>
+    </ul>
+    {% endfor %}
+  
+{% endblock %}
