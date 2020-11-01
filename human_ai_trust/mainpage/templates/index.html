@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Human-AI Trust</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="css/styles.css">
+
+</head>
+<body>
+
+	<!-- WRAPPER -->
+	<div class="container-fluid" style="height: 100vh; padding-top: 1vh">
+		<div class="row">
+			<div class="col-10 offset-1" style="border: thin solid grey; border-radius: 10px;">
+
+				<!-- HEADING -->
+				<div class="row d-flex justify-content-center" style="height: 10vh; padding: 0; background: lightskyblue; border-radius: 10px;">
+					<div class="align-self-center">
+						<h1>Human-AI Team Diagnosis</h1>
+					</div>
+				</div>
+
+				<!-- CONTENT -->
+				<div class="row" style="height: 70vh; background: #c7e6f7; padding: 0; border-radius: 10px;">
+
+					<!-- LEFT -->
+					<div class="col-7">
+						<div class="row" style="background: ghostwhite;">
+							<div id="stateCarousel" class="carousel slide" data-ride="carousel" style=" width: 100%">
+								<div class="carousel-inner">
+
+									<!-- Directions -->
+									<div class="carousel-item">
+										<div class="col">
+											<div class="row" style="height: 70vh; background: rgba(120,180,255,0.2); padding: 1vh">
+
+												<h2>Directions</h2>
+												<p> 
+													<b>Objective</b>: You will see a series of 50 patients and the objective is to diagnose them as either (1) sick or (2) healthy.<br>
+
+													<b>Info</b>: For each patient, you will see information about their health, including "insert features". Note: no prior knowledge of medicine is needed nor expected for these tasks. <br>
+
+													<b>AI</b>: You will have the help of an AI tool that predicts whether each patient is sick or healthy. You can either choose to go with the AI’s prediction or manually select an option. Everytime you diagnose a patient, you will be told whether your decision was right or wrong and how many points you gained. <br>
+
+													<b>Updating the AI</b>: The AI isn't always correct in diagnosing patients. When you disagree with the AI prediction, you can help the AI learn from its mistakes by clicking the update button.  <br>
+
+													<b>How to gain points</b>: 
+
+
+												</p>
+											</div>
+										</div>
+									</div>
+
+									<!-- Task -->
+									<div class="carousel-item active">
+										<div class="col">
+											<div class="row" style="height: 70vh; background: #c7e6f7; padding: 1vh;">
+												<div id="task" style="height: 100%; width:100%; background: #c7e6f7;">
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- RIGHT -->
+					<div class="col-5">
+						<div class="row" style="height: 15%; background: #c7e6f7; padding-left: 0vh; padding-bottom: 1vh; padding-right: 1vh; padding-top: 1vh">
+							<div class="col" style="background: #c7e6f7;">
+								<div class="row" style="height: 100%">
+									<div class="col-4">
+										<div class="row justify-content-center" style="height: 100%">
+											<button class="btn btn-dark align-self-center" type="button" onclick="switchView()">Toggle View</button>
+										</div>
+									</div>
+									<div class="col-8">
+										<div class="row justify-content-center" style="height: 100%">
+											<select id='categorySelector' class="custom-select align-self-center" style="width: 70%" onchange="categoryChange()">
+												<option value="absCases" selected>Cases (absolute)</option>
+												<option value="absDeaths">Deaths (absolute)</option>
+												<option value="relCases">Cases (relative to population)</option>
+												<option value="relDeaths">Deaths (relative to population)</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row justify-content-center" style="height: 85%; background: #c7e6f7; padding-left: 0vh; padding-bottom: 1vh; padding-right: 1vh; padding-top: 0vh">
+							<div id="scatterDiv" class="align-self-center" style="height: 100%; width:100%; background: #c7e6f7;">
+
+								<!-- TODO - DELETE THE LINES BELOW -->
+									<div class = "row justify-content-center" style="height: 50%;">
+										<div id="barDiv1" class = "align-self-center" style="height: 100%; width:100%"></div>
+									</div>
+									<div class = "row justify-content-center" style="height: 50%;">
+										<div id="barDiv2" class = "align-self-center" style="height:100%; width:100%"></div>
+									</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="row" style="height: 18vh; background: #d2faea; padding: 0; border-radius: 10px;">
+					<div id="brushDiv" style="height: 100%; width:100%;"></div>
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+
+
+	<!-- - - - - - - - - - - - >
+	<    Load JS libraries     >
+	<- - - - - - - - - - - - -->
+
+	<!-- BOOTSTRAP -->
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+	<!-- d3 -->
+	<script src="https://d3js.org/d3.v6.min.js"></script>
+
+	<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+	<script src="https://d3js.org/topojson.v2.min.js"></script>
+	<script src="https://d3js.org/d3-geo.v1.min.js"></script>
+	<!-- Using open source legend online from Susie Lu -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+
+	<!-- OWN JS -->
+	<script src="js/helpers.js"></script>
+	<script src="js/dataTable.js"></script>
+	<script src="js/mapVis.js"></script>
+	<script src="js/barVis.js"></script>
+	<script src="js/brushVis.js"></script>
+	<script src="js/main.js"></script>
+</body>
+</html>
