@@ -1,11 +1,127 @@
 from django.db import models
+from django.db import models
+import json
+import random
+import copy
+import numpy as np
+
+class Disease:
+    def __init__(self):
+        self.features = ['cough', 'chills', 'flu_test', 'body_temp', 'weight']
+        self.feature_values = {'cough': [0,1], 'chills': [0,1], 'flu_test': [0,1], 
+                               'body_temp': ['low', 'norm', 'high'], 'weight': ['low', 'med', 'high']}
+        self.cases = [str(self.feature_values['cough'][(i//36)%2]) + "-" + 
+                       str(self.feature_values['chills'][(i//18)%2]) + "-" + 
+                       str(self.feature_values['flu_test'][(i//9)%2]) + "-" + 
+                       self.feature_values['body_temp'][(i//3)%3] + "-" +
+                       self.feature_values['weight'][(i)%3] for i in range(2*2*2*3*3)]
 
 # Create your models here.
+class ModelMLModel(models.Model):
+    domain = Disease()
 
+    # Fields
+    accuracy_field = models.TextField(blank=True, null=True, default='{}')
+    calibration_field = models.TextField(blank=True, null=True, default='{}')
+    update_type_field = models.IntegerField()
+    batched_accuracy_field = models.TextField(blank=True, null=True, default='{}')
 
-class ModelDataPoint(models.Model):
+    # Metadata
+    class Meta: 
+        ordering = ['-accuracy_field', '-calibration_field', '-update_type_field', '-batched_accuracy_field']
 
-    pass
+    # Methods
+    def initialize(self, performance, calibration, update):
+
+        accuracy = {}
+        if (performance == 1): #good model
+            for case in self.domain.cases:
+                accuracy[case] = 0.75
+        else: #performance == 0, poor model
+            for case in self.domain.cases:
+                accuracy[case] = 0.5
+        
+        calibration = {} #stores the standard deviation
+        if (calibration == 2): #well-calibrated for all
+            for case in self.domain.cases:
+                calibration[case] = .05
+        elif (calibration == 1): #well-calibrated for 2 random features
+            high_cal_features = random.sample(self.domain.features[:-1], 2) #choose 2 of the 4 important features
+            high_cal_features_vals = [random.sample(self.domain.feature_values[feat], 1) for feat in high_cal_features]
+            for case in self.domain.cases:
+                case_arr = case.split("-")
+                if (case_arr[self.domain.features.index(high_cal_features[0])] == high_cal_features_vals[0] or
+                    case_arr[self.domain.features.index(high_cal_features[1])] == high_cal_features_vals[1]):
+                    scalibration[case] = .05
+                else:
+                    calibration[case] = .20
+        else: #calibration == 0, not well-calibrated for all
+            for case in self.domain.cases:
+                calibration[case] = .20
+        
+        update_type = update
+        if(update_type == 0):
+            batched_accuracy = copy.deepcopy(accuracy)
+        
+        self.update_type_field = update_type
+        self.accuracy_field = json.dumps(accuracy)
+        self.calibration_field = json.dumps(calibration)
+        self.batched_accuracy_field = json.dumps(batched_accuracy)
+    
+    def batch_update(self, case):
+        self.accuracy_field = self.batched_accuracy_field   
+
+    def model_update(self, case):
+        batched_accuracy = json.loads(self.batched_accuracy_field)
+
+        case_arr = case.split("-")
+        #update the particular example
+        batched_accuracy[case] = 1.0
+        #update related classes
+        related = random.sample(domain.features, 2)
+        for case2 in self.domain.cases:
+            case2_arr = case2.split("-")
+            if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
+                case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
+                batched_accuracy[case2] += (1-batched_accuracy[case2])*0.15
+        
+        self.batched_accuracy_field = json.dumps(batched_accuracy)
+
+        if (self.update_type_field == 1): #immediate updates
+            self.batch_update(case)
+    
+    def ground_truth(self, case):
+        case_arr = case.split("-")
+
+        if (case_arr[3] == 'high' and (case_arr[0] == 1 or case_arr[1] == 1) and case_arr[2] == 0):
+            return 1
+        elif (case_arr[3] == 'norm' and case_arr[0] == 1 and case_arr[1] == 1):
+            return 1
+        return 0
+
+    def model_prediction(self, case):
+        gt = self.ground_truth(case)
+
+        accuracy = json.loads(self.accuracy_field)
+        calibration = json.loads(self.calibration_field)
+
+        if (random.random <= accuracy[case]):
+            prediction = gt
+        else:
+            prediction = abs(1-gt)
+        
+        confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
+        return (prediction, confidence)
+
+"""
+        accuracy = json.loads(self.accuracy_field)
+        calibration = json.loads(self.calibration_field)
+        batched_accuracy = json.loads(self.batched_accuracy_field)
+
+        self.accuracy_field = json.dumps(accuracy)
+        self.calibration_field = json.dumps(calibration)
+        self.batched_accuracy_field = json.dumps(batched_accuracy)
+"""
 
 class ModelUserResponse(models.Model):
 	"""A typical class defining a model, derived from the Model class."""
