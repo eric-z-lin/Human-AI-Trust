@@ -78,7 +78,7 @@ class ModelMLModel(models.Model):
         #update the particular example
         batched_accuracy[case] = 1.0
         #update related classes
-        related = random.sample(domain.features, 2)
+        related = random.sample(self.domain.features, 2)
         for case2 in self.domain.cases:
             case2_arr = case2.split("-")
             if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
@@ -112,6 +112,15 @@ class ModelMLModel(models.Model):
         
         confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
         return (prediction, confidence)
+
+    def generate_patient(self):
+    	patient = random.sample(self.domain.cases, 1)[0]
+    	patient_arr = patient.split("-")
+
+    	generated_patient = {}
+    	for feat in range(len(self.domain.features)):
+			generated_patient[self.domain.features[feat]] = patient_arr[feat]
+    	return generated_patient
 
 """
         accuracy = json.loads(self.accuracy_field)
