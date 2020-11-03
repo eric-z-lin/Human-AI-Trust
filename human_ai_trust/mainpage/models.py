@@ -58,11 +58,10 @@ class ModelMLModel(models.Model):
             for case in self.domain.cases:
                 calibration[case] = .20
         
-        update_type = update
-        if(update_type == 0):
+        if(update == 0):
             batched_accuracy = copy.deepcopy(accuracy)
         
-        self.update_type_field = update_type
+        self.update_type_field = update
         self.accuracy_field = json.dumps(accuracy)
         self.calibration_field = json.dumps(calibration)
         self.batched_accuracy_field = json.dumps(batched_accuracy)
@@ -70,19 +69,30 @@ class ModelMLModel(models.Model):
     def batch_update(self, case):
         self.accuracy_field = self.batched_accuracy_field   
 
-    def model_update(self, case):
+    def model_update(self, case, user_prediction, gt):
         batched_accuracy = json.loads(self.batched_accuracy_field)
-
         case_arr = case.split("-")
-        #update the particular example
-        batched_accuracy[case] = 1.0
-        #update related classes
-        related = random.sample(self.domain.features, 2)
-        for case2 in self.domain.cases:
-            case2_arr = case2.split("-")
-            if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
-                case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
-                batched_accuracy[case2] += (1-batched_accuracy[case2])*0.15
+
+        if(user_prediction != gt): #user was incorrect, model becomes slightly worse
+            #update the partiular example
+            batched_accuracy[case] = batched_accuracy[case]*0.9
+            #update related classes
+            related = random.sample(self.domain.features, 2)
+            for case2 in self.domain.cases:
+                case2_arr = case2.split("-")
+                if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
+                    case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
+                    batched_accuracy[case2] = batched_accuracy[case2]*0.92
+        else: #user was correct, model becomes slightly better
+            #update the particular example
+            batched_accuracy[case] = 1.0
+            #update related classes
+            related = random.sample(self.domain.features, 3)
+            for case2 in self.domain.cases:
+                case2_arr = case2.split("-")
+                if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
+                    case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
+                    batched_accuracy[case2] += (1-batched_accuracy[case2])*0.2
         
         self.batched_accuracy_field = json.dumps(batched_accuracy)
 
@@ -110,13 +120,19 @@ class ModelMLModel(models.Model):
             prediction = abs(1-gt)
         
         confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
-        return (prediction, confidence)
+        return [prediction, confidence, gt]
+
+    def generated_patient_to_case(self, generated_patient):
+        case = ""
+        for feat in range(len(self.domain.features)):
+            case = case + generated_patient[self.domain.features[feat]] + "-"
+        return case[:-1]
 
     def generate_patient(self):
     	patient = random.sample(self.domain.cases, 1)[0]
     	patient_arr = patient.split("-")
 
-    	generated_patient = {}
+    	generated_patient = {} #features to value mapping
     	for feat in range(len(self.domain.features)):
 			generated_patient[self.domain.features[feat]] = patient_arr[feat]
     	return generated_patient
