@@ -15,7 +15,7 @@ class Disease:
                                     'chills-0':"No", 'chills-1':"Yes",
                                     'flu_test-0':"-", 'flu_test-1':"+",
                                     'body_temp-Low':"Low",'body_temp-Norm':"Norm",'body_temp-High':"High",
-                                    'body_temp-Low':"Low",'body_temp-Med':"Med",'body_temp-High':"High"}
+                                    'weight-Low':"Low",'weight-Med':"Med",'weight-High':"High"}
         self.cases = [str(self.feature_values['cough'][(i//36)%2]) + "-" + 
                        str(self.feature_values['chills'][(i//18)%2]) + "-" + 
                        str(self.feature_values['flu_test'][(i//9)%2]) + "-" + 
