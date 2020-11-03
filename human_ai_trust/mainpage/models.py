@@ -58,8 +58,7 @@ class ModelMLModel(models.Model):
             for case in self.domain.cases:
                 calibration[case] = .20
         
-        if(update == 0):
-            batched_accuracy = copy.deepcopy(accuracy)
+        batched_accuracy = copy.deepcopy(accuracy)
         
         self.update_type_field = update
         self.accuracy_field = json.dumps(accuracy)
