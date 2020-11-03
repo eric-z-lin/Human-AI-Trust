@@ -12,15 +12,10 @@ from django.http import HttpResponse
 def index(request):
 	"""View function for home page of site."""
 
+	# if request.source == 'load_new_patient':
 	# Load session Id
 	experiment_id = request.session['experiment_id']
-	print('session index', request.session['experiment_id'])
 	experiment = ModelExperiment.objects.get(id=experiment_id)
-	print("more experiment stuff")
-	print(experiment.id)
-	print(experiment.field_ml_model_accuracy)
-	print(experiment.field_model_ml_model.id)
-	print(experiment.field_model_ml_model.accuracy_field)
 
 	ml_model = experiment.field_model_ml_model
 
@@ -32,11 +27,6 @@ def index(request):
 	model_prediction = arr[0]
 	model_confidence = arr[1]
 	ground_truth = arr[2]
-
-	print('model things')
-	print(model_prediction)
-	print(model_confidence)
-	print(ground_truth)
 
 
 	initUserResponse = {
@@ -69,21 +59,7 @@ def index(request):
 
 	new_user_response.save()
 
-	print("new user response")
-	print(new_user_response.field_data_point_string)
-	print(new_user_response.field_experiment.id)
 
-	# Generate counts of some of the main objects
-	# all_responses = ModelUserResponse.objects.all()
-	# print(len(all_responses))
-	# num_responses = len(all_responses)
-
-
-	# context = {
-	#     'user_responses': all_responses,
-	#     'num_responses': num_responses,
-	#     'feature_dict': feature_dict,
-	# }
 	context = {
 	    # 'feature_dict': feature_dict,
 	    'ml_confidence': model_confidence
