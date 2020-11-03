@@ -13,28 +13,43 @@ def index(request):
 	"""View function for home page of site."""
 
 	# Load session Id
-	print('session index', request.session['user_id'])
-	
+	experiment_id = request.session['experiment_id']
+	print('session index', request.session['experiment_id'])
+	experiment = ModelExperiment.objects.get(id=experiment_id)
+	print("more experiment stuff")
+	print(experiment.id)
+	print(experiment.field_ml_model_accuracy)
+	print(experiment.field_model_ml_model.id)
+	print(experiment.field_model_ml_model.accuracy_field)
 
+	ml_model = experiment.field_model_ml_model
 
 	# Get patient case
-	generated_patient = generate_patient()
-	case = generated_patient_to_case(generated_patient)
+	generated_patient = experiment.generate_patient()
+	case = experiment.generated_patient_to_case(generated_patient)
+	
 	arr = ml_model.model_prediction(case)
 	model_prediction = arr[0]
 	model_confidence = arr[1]
 	ground_truth = arr[2]
 
+	print('model things')
+	print(model_prediction)
+	print(model_confidence)
+	print(ground_truth)
+
 
 	initUserResponse = {
-		"field_data_point_string": '0-0-0-low-low',
-		"field_ml_accuracy":  0.5,
-		"field_ml_confidence": 0.5,
-		"field_ml_prediction": 0,
-		"field_user_prediction": 1,
-		"field_user_did_update": 1,
-		"field_user_disagree_reason_choices": 'a',
-		"field_user_disagree_reason_freetext": 'Example long text',
+		"field_data_point_string": case,
+		"field_ml_accuracy":  json.dumps(ml_model.accuracy_field),
+		"field_ml_calibration": json.dumps(ml_model.calibration_field),
+		"field_ml_prediction": model_prediction,
+		"field_ml_confidence": model_confidence,
+		"field_instance_ground_truth": ground_truth,
+		"field_user_prediction": None,
+		"field_user_did_update": None,
+		"field_user_disagree_reason_choices": None,
+		"field_user_disagree_reason_freetext": None,
 	}
 
 
@@ -42,15 +57,21 @@ def index(request):
 	new_user_response = ModelUserResponse(
 							field_data_point_string= initUserResponse["field_data_point_string"],
 							field_ml_accuracy = initUserResponse["field_ml_accuracy"],
-							field_ml_confidence = initUserResponse["field_ml_confidence"],
+							field_ml_calibration = initUserResponse["field_ml_calibration"],
 							field_ml_prediction = initUserResponse["field_ml_prediction"],
+							field_instance_ground_truth = initUserResponse["field_instance_ground_truth"],
 							field_user_prediction = initUserResponse["field_user_prediction"],
 							field_user_did_update = initUserResponse["field_user_did_update"],
 							field_user_disagree_reason_choices = initUserResponse["field_user_disagree_reason_choices"],
-							field_user_disagree_reason_freetext = initUserResponse["field_user_disagree_reason_freetext"]
+							field_user_disagree_reason_freetext = initUserResponse["field_user_disagree_reason_freetext"],
+							field_experiment = experiment
 						)
 
 	new_user_response.save()
+
+	print("new user response")
+	print(new_user_response.field_data_point_string)
+	print(new_user_response.field_experiment.id)
 
 	# Generate counts of some of the main objects
 	# all_responses = ModelUserResponse.objects.all()
@@ -58,10 +79,14 @@ def index(request):
 	# num_responses = len(all_responses)
 
 
+	# context = {
+	#     'user_responses': all_responses,
+	#     'num_responses': num_responses,
+	#     'feature_dict': feature_dict,
+	# }
 	context = {
-	    'user_responses': all_responses,
-	    'num_responses': num_responses,
-	    'feature_dict': feature_dict,
+	    # 'feature_dict': feature_dict,
+	    'ml_confidence': model_confidence
 	}
 
 	# Render the HTML template index.html with the data in the context variable
@@ -74,7 +99,7 @@ def start_experiment(request):
 
 	# Instantiate models
 	new_experiment = ModelExperiment()
-	new_experiment.field_ml_model_accuracy = 0
+	new_experiment.field_ml_model_accuracy = 1
 	new_experiment.field_ml_model_calibration = 0
 	new_experiment.field_ml_model_update_type = 0
 	ml_model = ModelMLModel()
@@ -83,13 +108,13 @@ def start_experiment(request):
 		calibration=new_experiment.field_ml_model_calibration, 
 		update=new_experiment.field_ml_model_update_type
 	)
-	new_experiment.field_model_ml_model_id = ml_model
+	new_experiment.field_model_ml_model = ml_model
 	ml_model.save()
 	new_experiment.save()
 
 	# Session
-	request.session['user_id'] = new_experiment.id
-	print('session start experiment', request.session['user_id'])
+	request.session['experiment_id'] = new_experiment.id
+	print('session start experiment', request.session['experiment_id'])
 	
 
 	# # Generate counts of some of the main objects

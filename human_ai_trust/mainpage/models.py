@@ -120,7 +120,7 @@ class ModelMLModel(models.Model):
         accuracy = json.loads(self.accuracy_field)
         calibration = json.loads(self.calibration_field)
 
-        if (random.random <= accuracy[case]):
+        if (random.random() <= accuracy[case]):
             prediction = gt
         else:
             prediction = abs(1-gt)
@@ -171,7 +171,7 @@ class ModelExperiment(models.Model):
 	field_user_name = models.CharField(max_length=40, blank=True, help_text='User first name')
 
 	# Link an ML model to this experiment
-	field_model_ml_model_id = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
+	field_model_ml_model = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
 
 
 	domain = Disease()
@@ -224,18 +224,21 @@ class ModelUserResponse(models.Model):
 	field_data_point_string = models.CharField(max_length=20, help_text="Unique string to specify the input feature combo")
 
 	# Fields
-	field_ml_accuracy = models.DecimalField(max_digits=4, decimal_places=4, help_text="ML accuracy at time of question")
-	field_ml_confidence = models.DecimalField(max_digits=4, decimal_places=4, help_text="ML confidence at time of question")
-	field_ml_prediction = models.IntegerField(help_text="Actual ML prediction")
-	field_user_prediction = models.IntegerField(help_text="User prediction")
-	field_user_did_update = models.IntegerField(help_text="Whether or not user updated the model")
+	# field_ml_accuracy = models.DecimalField(max_digits=4, decimal_places=4, help_text="ML accuracy at time of question")
+	field_ml_accuracy = models.TextField(blank=True, null=True, default='{}', help_text="ML accuracy at time of question -- json dict")
+	field_ml_calibration = models.TextField(blank=True, null=True, default='{}', help_text="ML confidence at time of question -- json dict")
+	field_ml_prediction = models.IntegerField(null=True, help_text="Actual ML prediction")
+	field_instance_ground_truth = models.IntegerField(null=True, help_text="Ground truth label")
 
-	field_user_disagree_reason_choices = models.CharField(max_length=1, choices=USER_RESPONSES, blank=True, 
+	field_user_prediction = models.IntegerField(null=True, help_text="User prediction")
+	field_user_did_update = models.IntegerField(null=True, help_text="Whether or not user updated the model")
+
+	field_user_disagree_reason_choices = models.CharField(null=True, max_length=1, choices=USER_RESPONSES, blank=True, 
 				default='m', help_text='If user does not use model prediction, ask why')
-	field_user_disagree_reason_freetext = models.TextField(help_text='If user chose "other", provide freetext box')
+	field_user_disagree_reason_freetext = models.TextField(null=True, help_text='If user chose "other", provide freetext box')
 
 
-	field_experiment_id = models.ForeignKey(ModelExperiment, on_delete=models.SET_NULL, blank=True, null=True)
+	field_experiment = models.ForeignKey(ModelExperiment, on_delete=models.SET_NULL, blank=True, null=True)
 
 	# # Metadata
 	# class Meta: 
