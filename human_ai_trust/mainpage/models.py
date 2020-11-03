@@ -65,7 +65,7 @@ class ModelMLModel(models.Model):
         self.calibration_field = json.dumps(calibration)
         self.batched_accuracy_field = json.dumps(batched_accuracy)
     
-    def batch_update(self, case):
+    def batch_update(self):
         self.accuracy_field = self.batched_accuracy_field   
 
     def model_update(self, case, user_prediction, gt):
