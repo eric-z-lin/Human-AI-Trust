@@ -121,20 +121,20 @@ class ModelMLModel(models.Model):
         confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
         return [prediction, confidence, gt]
 
-    def generated_patient_to_case(self, generated_patient):
-        case = ""
-        for feat in range(len(self.domain.features)):
-            case = case + generated_patient[self.domain.features[feat]] + "-"
-        return case[:-1]
+    # def generated_patient_to_case(self, generated_patient):
+    #     case = ""
+    #     for feat in range(len(self.domain.features)):
+    #         case = case + generated_patient[self.domain.features[feat]] + "-"
+    #     return case[:-1]
 
-    def generate_patient(self):
-    	patient = random.sample(self.domain.cases, 1)[0]
-    	patient_arr = patient.split("-")
+    # def generate_patient(self):
+    # 	patient = random.sample(self.domain.cases, 1)[0]
+    # 	patient_arr = patient.split("-")
 
-    	generated_patient = {} #features to value mapping
-    	for feat in range(len(self.domain.features)):
-            generated_patient[self.domain.features[feat]] = patient_arr[feat]
-    	return generated_patient
+    # 	generated_patient = {} #features to value mapping
+    # 	for feat in range(len(self.domain.features)):
+    #         generated_patient[self.domain.features[feat]] = patient_arr[feat]
+    # 	return generated_patient
 
 """
         accuracy = json.loads(self.accuracy_field)
@@ -145,6 +145,53 @@ class ModelMLModel(models.Model):
         self.calibration_field = json.dumps(calibration)
         self.batched_accuracy_field = json.dumps(batched_accuracy)
 """
+
+
+class ModelExperiment(models.Model):
+	"""A typical class defining a model, derived from the Model class."""
+
+
+	# linking fields
+
+	# Fields
+	# 0 or 1
+	field_ml_model_accuracy = models.IntegerField(help_text="0: Low accuracy, 1: high accuracy")
+	# 0 or 1
+	field_ml_model_calibration = models.IntegerField(help_text="0: Poor calibration, 1: Good calibration")
+	# 0, 1, or 2
+	field_ml_model_update_type = models.IntegerField(help_text="0: Control/no update, 1: instant update, 2: batched update")
+
+	field_user_name = models.CharField(max_length=40, blank=True, help_text='User first name')
+
+	# Link an ML model to this experiment
+	field_model_ml_model_id = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
+
+
+	domain = Disease()
+
+	def generated_patient_to_case(self, generated_patient):
+		case = ""
+		for feat in range(len(self.domain.features)):
+			case = case + generated_patient[self.domain.features[feat]] + "-"
+		return case[:-1]
+
+	def generate_patient(self):
+		patient = random.sample(self.domain.cases, 1)[0]
+		patient_arr = patient.split("-")
+
+		generated_patient = {} #features to value mapping
+		for feat in range(len(self.domain.features)):
+			generated_patient[self.domain.features[feat]] = patient_arr[feat]
+		return generated_patient
+
+
+
+
+
+
+
+
+
 
 class ModelUserResponse(models.Model):
 	"""A typical class defining a model, derived from the Model class."""
@@ -179,6 +226,9 @@ class ModelUserResponse(models.Model):
 	field_user_disagree_reason_choices = models.CharField(max_length=1, choices=USER_RESPONSES, blank=True, 
 				default='m', help_text='If user does not use model prediction, ask why')
 	field_user_disagree_reason_freetext = models.TextField(help_text='If user chose "other", provide freetext box')
+
+
+	field_experiment_id = models.ForeignKey(ModelExperiment, on_delete=models.SET_NULL, blank=True, null=True)
 
 	# # Metadata
 	# class Meta: 
