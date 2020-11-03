@@ -6,13 +6,16 @@ from mainpage.models import *
 
 from django.http import HttpResponse
 
+
+
+
 def index(request):
 	"""View function for home page of site."""
 
+	# Load session Id
+	print('session index', request.session['user_id'])
+	
 
-	# Instantiate models
-	ml_model = ModelMLModel()
-	ml_model.initialize(performance=, calibration=, update=)
 
 	# Get patient case
 	generated_patient = generate_patient()
@@ -50,9 +53,9 @@ def index(request):
 	new_user_response.save()
 
 	# Generate counts of some of the main objects
-	all_responses = ModelUserResponse.objects.all()
-	print(len(all_responses))
-	num_responses = len(all_responses)
+	# all_responses = ModelUserResponse.objects.all()
+	# print(len(all_responses))
+	# num_responses = len(all_responses)
 
 
 	context = {
@@ -69,31 +72,35 @@ def index(request):
 def start_experiment(request):
 	"""View function for home page of site."""
 
-	new_user_response = ModelUserResponse(field_data_point_string='0-0-0-low-low',
-							field_ml_accuracy = 0.5,
-							field_ml_confidence = 0.5,
-							field_ml_prediction = 0,
-							field_user_prediction = 1,
-							field_user_did_update = 1,
-							field_user_disagree_reason_choices = 'a',
-							field_user_disagree_reason_freetext = 'Example long text'
-							)
+	# Instantiate models
+	new_experiment = ModelExperiment()
+	new_experiment.field_ml_model_accuracy = 0
+	new_experiment.field_ml_model_calibration = 0
+	new_experiment.field_ml_model_update_type = 0
+	ml_model = ModelMLModel()
+	ml_model.initialize(
+		performance=new_experiment.field_ml_model_accuracy, 
+		calibration=new_experiment.field_ml_model_calibration, 
+		update=new_experiment.field_ml_model_update_type
+	)
+	new_experiment.field_model_ml_model_id = ml_model
+	ml_model.save()
+	new_experiment.save()
 
-	new_user_response.save()
+	# Session
+	request.session['user_id'] = new_experiment.id
+	print('session start experiment', request.session['user_id'])
+	
 
-	# Generate counts of some of the main objects
-	all_responses = ModelUserResponse.objects.all()
-	print(len(all_responses))
-	num_responses = len(all_responses)
+	# # Generate counts of some of the main objects
+	# all_responses = ModelUserResponse.objects.all()
+	# print(len(all_responses))
+	# num_responses = len(all_responses)
 
-
-	context = {
-	    'user_responses': all_responses,
-	    'num_responses': num_responses
-	}
+	context = {}
 
 	# Render the HTML template index.html with the data in the context variable
-	return render(request, 'index.html', context=context)
+	return render(request, 'start_experiment.html', context=context)
 
 
 def updateButton(request):
