@@ -134,7 +134,7 @@ class ModelMLModel(models.Model):
 
     	generated_patient = {} #features to value mapping
     	for feat in range(len(self.domain.features)):
-			generated_patient[self.domain.features[feat]] = patient_arr[feat]
+            generated_patient[self.domain.features[feat]] = patient_arr[feat]
     	return generated_patient
 
 """
