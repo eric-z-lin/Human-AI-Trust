@@ -6,9 +6,16 @@ import numpy as np
 
 class Disease:
     def __init__(self):
+        self.feature_names = {'cough': "Cough", 'chills': "Chills", 'flu_test':"Result of Patient Flu Test", 
+                                'body_temp':"Body Temperature", 'weight':"Weight"}
         self.features = ['cough', 'chills', 'flu_test', 'body_temp', 'weight']
         self.feature_values = {'cough': [0,1], 'chills': [0,1], 'flu_test': [0,1], 
-                               'body_temp': ['low', 'norm', 'high'], 'weight': ['low', 'med', 'high']}
+                               'body_temp': ['Low', 'Norm', 'High'], 'weight': ['Low', 'Med', 'High']}
+        self.feature_value_names = {['cough', 0]:"No", ['cough', 1]:"Yes",
+                                    ['chills', 0]:"No", ['chills', 1]:"Yes",
+                                    ['flu_test', 0]:"-", ['flu_test', 1]:"+",
+                                    ['body_temp', "Low"]:"Low",['body_temp', "Norm"]:"Norm",['body_temp', "High"]:"High",
+                                    ['weight', "Low"]:"Low",['weight', "Med"]:"Norm",['weight', "High"]:"High"}
         self.cases = [str(self.feature_values['cough'][(i//36)%2]) + "-" + 
                        str(self.feature_values['chills'][(i//18)%2]) + "-" + 
                        str(self.feature_values['flu_test'][(i//9)%2]) + "-" + 
