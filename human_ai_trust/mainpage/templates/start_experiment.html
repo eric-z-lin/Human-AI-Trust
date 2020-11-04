@@ -1,6 +1,11 @@
 {% extends "template.html" %}
 
 {% block content %}
-<a href='/mainpage/'>Start experiment</a>
+<form action="/mainpage/start_experiment" method="post">
+	{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit">
+</form>
+<!-- <a href='/mainpage/'>Start experiment</a> -->
 
-{% endblock %}
+{% endblock %}	

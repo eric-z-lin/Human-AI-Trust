@@ -1,10 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django import forms
 
 from mainpage.models import *
 
 # Create your views here.
 
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 
 
@@ -87,35 +88,85 @@ def index(request):
 
 
 
+class InitExperimentForm(forms.Form):
+	user_name = forms.CharField(label='Your name', max_length=100)
+	ACCURACY_CHOICES =( 
+		(0, "Giraffe"),
+		(1, "Lion")
+	)
+	field_ml_model_accuracy = forms.ChoiceField(choices = ACCURACY_CHOICES)
+
+	CALIBRATION_CHOICES =( 
+		(0, "Square"),
+		(1, "Circle")
+	)
+	field_ml_model_calibration = forms.ChoiceField(choices = CALIBRATION_CHOICES)
+
+	UPDATE_TYPE_CHOICES =( 
+		(0, "Plus"),
+		(1, "Minus"),
+		(2, "Times")
+	)
+	field_ml_model_update_type = forms.ChoiceField(choices = UPDATE_TYPE_CHOICES)
+
+
 def start_experiment(request):
 	"""View function for home page of site."""
 
-	# Instantiate models
-	new_experiment = ModelExperiment()
-	new_experiment.field_ml_model_accuracy = 1
-	new_experiment.field_ml_model_calibration = 0
-	new_experiment.field_ml_model_update_type = 0
-	ml_model = ModelMLModel()
-	ml_model.initialize(
-		performance=new_experiment.field_ml_model_accuracy, 
-		calibration=new_experiment.field_ml_model_calibration, 
-		update=new_experiment.field_ml_model_update_type
-	)
-	new_experiment.field_model_ml_model = ml_model
-	ml_model.save()
-	new_experiment.save()
+	# The request method 'POST' indicates
+	# that the form was submitted
+	if request.method == 'POST':  # 1
+		# Create a form instance with the submitted data
+		form = InitExperimentForm(request.POST)  # 2
+		# Validate the form
+		print('checking validity')
+		if form.is_valid(): 
 
-	# Session
-	request.session['experiment_id'] = new_experiment.id
-	print('session start experiment', request.session['experiment_id'])
-	
+			# Instantiate models
+			new_experiment = ModelExperiment()
+			new_experiment.field_ml_model_accuracy = form.cleaned_data['field_ml_model_accuracy']
+			new_experiment.field_ml_model_calibration = form.cleaned_data['field_ml_model_calibration']
+			new_experiment.field_ml_model_update_type = form.cleaned_data['field_ml_model_update_type']
+			new_experiment.user_name = form.cleaned_data['user_name']
 
-	# # Generate counts of some of the main objects
-	# all_responses = ModelUserResponse.objects.all()
-	# print(len(all_responses))
-	# num_responses = len(all_responses)
+			print('form params')
+			print(new_experiment.field_ml_model_accuracy)
+			print(new_experiment.field_ml_model_calibration)
+			print(new_experiment.field_ml_model_update_type)
+			print(new_experiment.user_name)
 
-	context = {}
+			ml_model = ModelMLModel()
+			ml_model.initialize(
+				performance=new_experiment.field_ml_model_accuracy, 
+				calibration=new_experiment.field_ml_model_calibration, 
+				update=new_experiment.field_ml_model_update_type
+			)
+			new_experiment.field_model_ml_model = ml_model
+			ml_model.save()
+			new_experiment.save()
+
+			# Session
+			request.session['experiment_id'] = new_experiment.id
+			print('session start experiment', request.session['experiment_id'])
+
+			return HttpResponseRedirect('/mainpage/')
+
+		else:
+			# Create an empty form instance
+			form = InitExperimentForm()
+
+			return render(request, 'start_experiment.html', {'form': form})	
+
+	else:
+
+		# Create an empty form instance
+		form = InitExperimentForm()
+
+		return render(request, 'start_experiment.html', {'form': form})	
+
+		
+
+
 
 	# Render the HTML template index.html with the data in the context variable
 	return render(request, 'start_experiment.html', context=context)
