@@ -71,6 +71,7 @@ def index(request):
 		    'ml_model_prediction': ('Negative' if model_prediction == 0 else 'Positive'),
 		    'ml_confidence': str(model_confidence) + "%",
 		    'feature_display_dict': feature_display_dict,
+		    'user_response': new_user_response,
 		}
 
 		# Render the HTML template index.html with the data in the context variable
