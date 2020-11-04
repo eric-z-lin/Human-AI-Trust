@@ -126,6 +126,7 @@ class ModelMLModel(models.Model):
             prediction = abs(1-gt)
         
         confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
+        confidence = min(max(confidence, 0.0),1.0)
         return [prediction, confidence, gt]
 
     # def generated_patient_to_case(self, generated_patient):
