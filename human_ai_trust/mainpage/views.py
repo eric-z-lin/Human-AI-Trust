@@ -25,8 +25,14 @@ def index(request):
 		
 		arr = ml_model.model_prediction(case)
 		model_prediction = arr[0]
-		model_confidence = arr[1]
+		model_confidence = round(arr[1]*100, 1)
 		ground_truth = arr[2]
+
+		# Table for patient case
+		domain = ml_model.domain
+		feature_display_dict = {}
+		for feat in domain.features:
+			feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
 
 
 		initUserResponse = {
@@ -62,7 +68,9 @@ def index(request):
 
 		context = {
 		    # 'feature_dict': feature_dict,
-		    'ml_confidence': model_confidence
+		    'ml_model_prediction': ('Negative' if model_prediction == 0 else 'Positive'),
+		    'ml_confidence': str(model_confidence) + "%",
+		    'feature_display_dict': feature_display_dict,
 		}
 
 		# Render the HTML template index.html with the data in the context variable
