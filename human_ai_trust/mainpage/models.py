@@ -168,7 +168,7 @@ class ModelExperiment(models.Model):
 	# 0, 1, or 2
 	field_ml_model_update_type = models.IntegerField(help_text="0: Control/no update, 1: instant update, 2: batched update")
 
-	field_user_name = models.CharField(max_length=40, blank=True, help_text='User first name')
+	field_user_name = models.CharField(max_length=40, blank=True, help_text='User name')
 
 	# Link an ML model to this experiment
 	field_model_ml_model = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
