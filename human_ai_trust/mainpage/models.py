@@ -216,7 +216,7 @@ class ModelUserResponse(models.Model):
 		('a','The model is typically wrong in this class'),
 		('b','The model is generally incorrect'),
 		('c','The model displayed low confidence'),
-		('d','I was confident I was right based on the current input/info'),
+		('d','I was confident I was right based on the patient profile'),
 		('e','Other: Free input')
 
 	)

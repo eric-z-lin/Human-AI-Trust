@@ -91,21 +91,21 @@ def index(request):
 class InitExperimentForm(forms.Form):
 	user_name = forms.CharField(label='Your name', max_length=100)
 	ACCURACY_CHOICES =( 
-		(0, "Giraffe"),
-		(1, "Lion")
+		(0, "Low"),
+		(1, "High")
 	)
 	field_ml_model_accuracy = forms.ChoiceField(choices = ACCURACY_CHOICES)
 
 	CALIBRATION_CHOICES =( 
-		(0, "Square"),
-		(1, "Circle")
+		(0, "Low"),
+		(1, "High")
 	)
 	field_ml_model_calibration = forms.ChoiceField(choices = CALIBRATION_CHOICES)
 
 	UPDATE_TYPE_CHOICES =( 
-		(0, "Plus"),
-		(1, "Minus"),
-		(2, "Times")
+		(0, "None"),
+		(1, "Immediate"),
+		(2, "Batched")
 	)
 	field_ml_model_update_type = forms.ChoiceField(choices = UPDATE_TYPE_CHOICES)
 
