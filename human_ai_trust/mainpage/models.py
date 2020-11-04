@@ -13,9 +13,9 @@ class Disease:
                                'body_temp': ['Low', 'Norm', 'High'], 'weight': ['Low', 'Med', 'High']}
         self.feature_value_names = {'cough-0':"No", 'cough-1':"Yes",
                                     'chills-0':"No", 'chills-1':"Yes",
-                                    'flu_test-0':"-", 'flu_test-1':"+",
+                                    'flu_test-0':"Negative", 'flu_test-1':"Positive",
                                     'body_temp-Low':"Low",'body_temp-Norm':"Norm",'body_temp-High':"High",
-                                    'body_temp-Low':"Low",'body_temp-Med':"Med",'body_temp-High':"High"}
+                                    'weight-Low':"Low",'weight-Med':"Med",'weight-High':"High"}
         self.cases = [str(self.feature_values['cough'][(i//36)%2]) + "-" + 
                        str(self.feature_values['chills'][(i//18)%2]) + "-" + 
                        str(self.feature_values['flu_test'][(i//9)%2]) + "-" + 
@@ -126,6 +126,7 @@ class ModelMLModel(models.Model):
             prediction = abs(1-gt)
         
         confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
+        confidence = min(max(confidence, 0.0),1.0)
         return [prediction, confidence, gt]
 
     # def generated_patient_to_case(self, generated_patient):
