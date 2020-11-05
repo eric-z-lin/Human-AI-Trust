@@ -66,6 +66,8 @@ def index(request):
 
 		new_user_response.save()
 
+		request.session['user_response_id'] = new_user_response.id
+
 
 		context = {
 		    # 'feature_dict': feature_dict,
@@ -76,14 +78,6 @@ def index(request):
 		}
 
 		# Render the HTML template index.html with the data in the context variable
-		return render(request, 'index.html', context=context)
-
-	if request.method == 'POST':
-		print('loaded post')
-
-
-		context = {}
-
 		return render(request, 'index.html', context=context)
 
 
@@ -172,11 +166,47 @@ def start_experiment(request):
 	return render(request, 'start_experiment.html', context=context)
 
 
-def updateButton(request):
-	""" View function for asking questions during update """
+def patient_result(request):
+	""" View function for updating userResponse and generating patient result page """
 
-	# Check if user agreed with AI
-	print()
+	# Check which button got pressed
+
+	if request.POST.get("positive-button"):
+
+	# Query for model, experiment case, user response
+	# Load session Id
+	user_response_id = request.session['user_response_id']
+	user_response = ModelUserResponse.objects.get(id=user_response_id)
+	ml_model = user_response.field_experiment.field_model_ml_model
+
+	# Table for patient case
+	domain = ml_model.domain
+	feature_display_dict = {}
+	for feat in domain.features:
+		feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
+
+
+	# Update user response
+
+
+
+	# Write user response to a csv
+	write_to_csv(user_response)
+
+
+	# Render patient result page
+	
+
+def write_to_csv(user_response):
+	fields = [user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
+					user_response.field_ml_accuracy, user_response.field_ml_calibration,
+					user_response.field_ml_prediction, user_response.field_ml_confidence,
+					user_response.field_instance_ground_truth, user_response.field_user_prediction,
+					user_response.field_user_did_update, user_response.field_user_disagree_reason_choices, 
+					user_response.field_user_disagree_reason_freetext]
+	with open('experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:
+		writer = csv.writer(f)
+		writer.writerow(fields)
 
 
 # def index(request):
