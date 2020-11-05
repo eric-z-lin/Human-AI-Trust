@@ -176,6 +176,8 @@ class ModelExperiment(models.Model):
 	# Link an ML model to this experiment
 	field_model_ml_model = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
 
+	field_score = models.IntegerField(help_text="Current experiment score", default=0)
+
 
 	domain = Disease()
 
@@ -183,13 +185,12 @@ class ModelExperiment(models.Model):
 		case = ""
 		for feat in range(len(self.domain.features)):
 			case = case + generated_patient[self.domain.features[feat]] + "-"
-		self.field_patient_number += 1
 		return case[:-1]
 
 	def generate_patient(self):
 		patient = random.sample(self.domain.cases, 1)[0]
 		patient_arr = patient.split("-")
-
+		self.field_patient_number += 1
 		generated_patient = {} #features to value mapping
 		for feat in range(len(self.domain.features)):
 			generated_patient[self.domain.features[feat]] = patient_arr[feat]
@@ -215,13 +216,21 @@ class ModelUserResponse(models.Model):
 
 
 
-	USER_RESPONSES = (
+	USER_DISAGREE_REASON_RESPONSES = (
 		('a','The model is typically wrong in this class'),
 		('b','The model is generally incorrect'),
 		('c','The model displayed low confidence'),
 		('d','I was confident I was right based on the patient profile'),
 		('e','Other: Free input')
 
+	)
+
+	USER_TRUST_RESPONSES = (
+		(0, "Not at all"),
+		(1, "Not really"),
+		(2, "Indifferent"),
+		(3, "A little"),
+		(4, "A lot"),
 	)
 
 	# linking fields
@@ -237,9 +246,12 @@ class ModelUserResponse(models.Model):
 	field_user_prediction = models.IntegerField(null=True, help_text="User prediction")
 	field_user_did_update = models.IntegerField(null=True, help_text="Whether or not user updated the model")
 
-	field_user_disagree_reason_choices = models.CharField(null=True, max_length=1, choices=USER_RESPONSES, blank=True, 
-				default='m', help_text='If user does not use model prediction, ask why')
+	field_user_disagree_reason_choices = models.CharField(null=True, max_length=1, choices=USER_DISAGREE_REASON_RESPONSES, blank=True, 
+				default='a', help_text='If user does not use model prediction, ask why')
 	field_user_disagree_reason_freetext = models.TextField(null=True, help_text='If user chose "other", provide freetext box')
+
+	field_user_trust = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=0, help_text='Measure of how much user trusts model')
 
 
 	field_experiment = models.ForeignKey(ModelExperiment, on_delete=models.SET_NULL, blank=True, null=True)

@@ -8,6 +8,7 @@ from mainpage.models import *
 from django.http import HttpResponse, HttpResponseRedirect
 import csv
 
+CONST_BATCH_UPDATE_FREQUENCY = 10
 
 
 
@@ -24,6 +25,9 @@ def index(request):
 		# Get patient case
 		generated_patient = experiment.generate_patient()
 		case = experiment.generated_patient_to_case(generated_patient)
+
+		# Need to save here since generate_patient() updates the field_patient_number
+		experiment.save()
 		
 		arr = ml_model.model_prediction(case)
 		model_prediction = arr[0]
@@ -182,7 +186,7 @@ class UpdateForm(forms.Form):
 		(4, "A lot"),
 	)
 	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES)
-	field_disagreement_choice = forms.ChoiceField(label="Why do you disagree with the AI?", choices = ModelUserResponse.USER_RESPONSES)
+	field_disagreement_choice = forms.ChoiceField(label="Why do you disagree with the AI?", choices = ModelUserResponse.USER_DISAGREE_REASON_RESPONSES)
 	field_disagreement_text = forms.CharField(label='Reason for disagreement', max_length=160)
 
 
@@ -197,48 +201,108 @@ class UserTrustForm(forms.Form):
 	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES)
 
 def patient_result(request):
-	""" View function for updating userResponse and generating patient result page """
-
-	# Check which button got pressed
-	# if request.POST.get("positive-button"):
-
+	""" View function for updating user_response and generating patient result page """
 
 	# Query for model, experiment case, user response
 	# Load session Id
 	user_response_id = request.session['user_response_id']
 	user_response = ModelUserResponse.objects.get(id=user_response_id)
-	ml_model = user_response.field_experiment.field_model_ml_model
+	experiment = user_response.field_experiment
+	ml_model = experiment.field_model_ml_model
+
 
 	# Table for patient case
 	domain = ml_model.domain
 	feature_display_dict = {}
-	for feat in domain.features:
-		feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
+	case_values = user_response.field_data_point_string.split('-')
+	for feat, case_value in zip(domain.features, case_values):
+		feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + case_value]
+
+	user_prediction = -1
+	ml_prediction = user_response.field_ml_prediction
+
+	# Check which button got pressed
+	if request.POST.get("agree"):
+	# Create a form instance with the submitted data
+		form = UserTrustForm(request.POST)  # 2
+		# Validate the form
+		print('checking validity')
+		if form.is_valid(): 
+
+			# Instantiate models
+			user_response.field_user_trust = form.cleaned_data['field_trust']
+			user_response.field_user_prediction = ml_prediction
 
 
-	# Update user response
+	# Check which button got pressed
+	if request.POST.get("disagree-no-update"):
+	# Create a form instance with the submitted data
+		form = UpdateForm(request.POST)  # 2
+		# Validate the form
+		print('checking validity')
+		if form.is_valid(): 
 
+			# Instantiate models
+			user_response.field_user_trust = form.cleaned_data['field_trust']
+			user_response.field_user_prediction = abs(1 - ml_prediction)
+			user_response.field_user_disagree_reason_choices = form.cleaned_data['field_disagreement_choice']
+			user_response.field_user_disagree_reason_freetext = form.cleaned_data['field_disagreement_text']
+
+
+
+		# Check which button got pressed
+	if request.POST.get("disagree-update"):
+	# Create a form instance with the submitted data
+		form = UpdateForm(request.POST)  # 2
+		# Validate the form
+		print('checking validity')
+		if form.is_valid(): 
+
+			# Instantiate models
+			user_response.field_user_trust = form.cleaned_data['field_trust']
+			user_response.field_user_prediction = abs(1 - ml_prediction)
+			user_response.field_user_disagree_reason_choices = form.cleaned_data['field_disagreement_choice']
+			user_response.field_user_disagree_reason_freetext = form.cleaned_data['field_disagreement_text']
+
+			ml_model.model_update(user_response.field_data_point_string, 
+				user_response.field_user_prediction, user_response.field_instance_ground_truth)
+
+	# if updatetype is 1, it'll handle updating on its own
+	if experiment.field_ml_model_update_type == 2 and experiment.field_patient_number%CONST_BATCH_UPDATE_FREQUENCY == 0:
+		ml_model.batch_update()
+
+
+	# Set scores
+	if user_response.field_instance_ground_truth == user_response.field_user_prediction:
+		experiment.field_score += 2
+	else:
+		experiment.field_score += -4
+
+
+	user_response.save()
+	ml_model.save()
 
 
 	# Write user response to a csv
 	write_to_csv(user_response)
 
-
 	# Render patient result page
-	
+
+	return HttpResponseRedirect('/mainpage/')
+
+
+
 
 def write_to_csv(user_response):
 	fields = [user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
 					user_response.field_ml_accuracy, user_response.field_ml_calibration,
-					user_response.field_ml_prediction, user_response.field_ml_confidence,
+					user_response.field_ml_prediction,
 					user_response.field_instance_ground_truth, user_response.field_user_prediction,
 					user_response.field_user_did_update, user_response.field_user_disagree_reason_choices, 
-					user_response.field_user_disagree_reason_freetext]
-
-	# TODO: Add trust values
+					user_response.field_user_disagree_reason_freetext, user_response.field_user_trust]
 
 
-	with open('experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:
+	with open('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:
 		writer = csv.writer(f)
 		writer.writerow(fields)
 
