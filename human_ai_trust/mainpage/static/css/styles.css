@@ -1,5 +1,17 @@
-.sidebar-nav {
-    margin-top: 20px;
-    padding: 0;
-    list-style: none;
+.landing-page-bg {
+	background: linear-gradient(134deg, #deece1, #e9feff, #ecf0d3);
+	background-size: 400% 400%; 
+	animation: gradient 10s ease infinite;"
+}
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
 }

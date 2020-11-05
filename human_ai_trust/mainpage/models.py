@@ -171,6 +171,8 @@ class ModelExperiment(models.Model):
 
 	field_user_name = models.CharField(max_length=40, blank=True, help_text='User name')
 
+    field_patient_number = models.IntegerField(help_text="from 0 to 50", initial=0)
+
 	# Link an ML model to this experiment
 	field_model_ml_model = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
 
@@ -181,6 +183,7 @@ class ModelExperiment(models.Model):
 		case = ""
 		for feat in range(len(self.domain.features)):
 			case = case + generated_patient[self.domain.features[feat]] + "-"
+        self.field_patient_number += 1
 		return case[:-1]
 
 	def generate_patient(self):
