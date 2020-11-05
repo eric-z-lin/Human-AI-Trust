@@ -84,8 +84,8 @@
                     Your diagnosis: <br>
                      <!-- <form method="POST">
                         {% csrf_token %} -->
-                      <button type="submit" class="btn btn-success" data-toggle="modal" data-target="#agreeModal">Positive</button>
-                      <button type="submit" class="btn btn-danger" data-toggle="modal" data-target="#disagreeModal">Negative</button>
+                      <button type="submit" class="btn btn-success" id="positive-button" data-toggle="modal" data-target="#agreeModal">Positive</button>
+                      <button type="submit" class="btn btn-danger" id="negative-button" data-toggle="modal" data-target="#agreeModal">Negative</button>
                     <!-- </form> -->
                     <!-- Button for update -->
 
@@ -225,5 +225,15 @@
       <li>{{ response.field_user_disagree_reason_freetext }}</li>
     </ul>
     {% endfor %} -->
+
+    <script>
+      let prediction = document.getElementById('ai-prediction');
+      if (prediction.innerHTML === 'Positive') {
+        document.getElementById('negative-button').setAttribute("data-target", "#disagreeModal");
+      }
+      else {
+        document.getElementById('positive-button').setAttribute("data-target", "#disagreeModal");
+      }
+    </script>
   
 {% endblock %}
