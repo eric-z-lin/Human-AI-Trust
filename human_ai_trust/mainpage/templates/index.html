@@ -80,6 +80,8 @@
                     <br>
                     AI's confidence: <span id="ai-prediction" style="color: blue;">{{ ml_confidence }}</span>
                     <br>
+                    Ground Truth: <span id="truth" style="color: blue;">{{ ground_truth }}</span>
+                    <br>
                     <br>
                     Your diagnosis: <span id="user-diagnosis"> </span> <br>
                      <!-- <form method="POST">
@@ -106,7 +108,7 @@
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                              <button type="submit" class="btn btn-primary" name="agree">Next patient</button>
+                              <button type="submit" class="btn btn-primary" value="agree" name="agree">Next patient</button>
                             </div>
                           </form>
                         </div>
@@ -130,8 +132,8 @@
                             </div>
                             <div class="modal-footer">
                               <p style="color:gray; font-size: 12px;"> You can update the AI with your own diagnosis. Note that if your diagnosis is wrong, updating the AI may decrease its accuracy. </p>
-                              <button type="submit" class="btn btn-secondary" name="disagree-no-update">Don't Update</button>
-                              <button type="submit" class="btn btn-primary" name="disagree-update">Update AI</button>
+                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update">Don't Update</button>
+                              <button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update">Update AI</button>
                             </div>
                           </form>
                         </div>
@@ -142,8 +144,9 @@
                 <!-- Score -->
                 <div class = "row justify-content-center" style="height: 50%;">
                   <div id="scoreDiv" class = "align-self-center" style="height:100%; width:100%">
-                    <h3> Current Score: <span id="score">20</span> pts</h3>
-                    <p> You have diagnosed <span id="score">2</span> out of 50 patients.</p>
+                    <h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
+                    <p> You have diagnosed <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }} patients.</p>
+                    <p> Name: {{name}}</p>
                   </div>
                 </div>
               </div>

@@ -8,7 +8,8 @@ from mainpage.models import *
 from django.http import HttpResponse, HttpResponseRedirect
 import csv
 
-CONST_BATCH_UPDATE_FREQUENCY = 10
+CONST_BATCH_UPDATE_FREQUENCY = 2
+MAX_TRIALS = 5
 
 
 
@@ -86,6 +87,11 @@ def index(request):
 		    'user_response': new_user_response,
 		    'form1': UserTrustForm(),
 		    'form2': UpdateForm(),
+		    'score': experiment.field_score,
+		    'patient_num': experiment.field_patient_number,
+		    'MAX_TRIALS': MAX_TRIALS,
+		    'name':experiment.field_user_name,
+		    'ground_truth': new_user_response.field_instance_ground_truth
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -132,13 +138,13 @@ def start_experiment(request):
 			new_experiment.field_ml_model_accuracy = form.cleaned_data['field_ml_model_accuracy']
 			new_experiment.field_ml_model_calibration = form.cleaned_data['field_ml_model_calibration']
 			new_experiment.field_ml_model_update_type = form.cleaned_data['field_ml_model_update_type']
-			new_experiment.user_name = form.cleaned_data['user_name']
+			new_experiment.field_user_name = form.cleaned_data['user_name']
 
 			print('form params')
 			print(new_experiment.field_ml_model_accuracy)
 			print(new_experiment.field_ml_model_calibration)
 			print(new_experiment.field_ml_model_update_type)
-			print(new_experiment.user_name)
+			print(new_experiment.field_user_name)
 
 			ml_model = ModelMLModel()
 			ml_model.initialize(
@@ -218,12 +224,27 @@ def patient_result(request):
 	for feat, case_value in zip(domain.features, case_values):
 		feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + case_value]
 
-	user_prediction = -1
+
+	if request.POST.get("next-trial"):
+		if experiment.field_patient_number >= MAX_TRIALS:
+			return HttpResponseRedirect('/mainpage/complete')
+
+		else:
+			return HttpResponseRedirect('/mainpage/')
+
+
+
 	ml_prediction = user_response.field_ml_prediction
+
+	print("what is this literally?")
+	print(request.POST.get("agree"))
+	print(request.POST.get("disagree-no-update"))
+	print(request.POST.get("disagree-update"))
 
 	# Check which button got pressed
 	if request.POST.get("agree"):
-	# Create a form instance with the submitted data
+		print('reached AGREE')
+		# Create a form instance with the submitted data
 		form = UserTrustForm(request.POST)  # 2
 		# Validate the form
 		print('checking validity')
@@ -236,7 +257,8 @@ def patient_result(request):
 
 	# Check which button got pressed
 	if request.POST.get("disagree-no-update"):
-	# Create a form instance with the submitted data
+		# Create a form instance with the submitted data
+		print('reached disagree-no-update')
 		form = UpdateForm(request.POST)  # 2
 		# Validate the form
 		print('checking validity')
@@ -252,7 +274,8 @@ def patient_result(request):
 
 		# Check which button got pressed
 	if request.POST.get("disagree-update"):
-	# Create a form instance with the submitted data
+		# Create a form instance with the submitted data
+		print('reached disagree-UPDATE')
 		form = UpdateForm(request.POST)  # 2
 		# Validate the form
 		print('checking validity')
@@ -272,6 +295,10 @@ def patient_result(request):
 		ml_model.batch_update()
 
 
+	print('user', user_response.field_user_prediction)
+	print('ml_prediction', ml_prediction)
+	print('ground truth',user_response.field_instance_ground_truth)
+
 	# Set scores
 	if user_response.field_instance_ground_truth == user_response.field_user_prediction:
 		experiment.field_score += 2
@@ -281,6 +308,8 @@ def patient_result(request):
 
 	user_response.save()
 	ml_model.save()
+	experiment.save()
+
 
 
 	# Write user response to a csv
@@ -288,9 +317,30 @@ def patient_result(request):
 
 	# Render patient result page
 
-	return HttpResponseRedirect('/mainpage/')
+	context = {
+		'feature_display_dict': feature_display_dict,
+		'ml_prediction': ml_prediction,
+		'user_prediction': user_response.field_user_prediction,
+		'ground_truth': user_response.field_instance_ground_truth
+
+	}
+
+	return render(request, 'patient_result.html', context=context)
 
 
+
+def experiment_complete(request):
+	experiment_id = request.session['experiment_id']
+	experiment = ModelExperiment.objects.get(id=experiment_id)
+
+	context = {
+		'score':experiment.field_score,
+		'name':experiment.field_user_name
+	}
+
+
+	# Render the HTML template index.html with the data in the context variable
+	return render(request, 'complete.html', context=context)
 
 
 def write_to_csv(user_response):

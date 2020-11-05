@@ -38,6 +38,8 @@ class ModelMLModel(models.Model):
 
 	# Methods
 	def initialize(self, performance, calibration, update):
+		good_calibration_std = 0.02
+		bad_calibration_std = 0.05
 
 		accuracy = {}
 		if (performance == 1): #good model
@@ -50,7 +52,7 @@ class ModelMLModel(models.Model):
 		calibration = {} #stores the standard deviation
 		if (calibration == 2): #well-calibrated for all
 			for case in self.domain.cases:
-				calibration[case] = .05
+				calibration[case] = good_calibration_std
 		elif (calibration == 1): #well-calibrated for 2 random features
 			high_cal_features = random.sample(self.domain.features[:-1], 2) #choose 2 of the 4 important features
 			high_cal_features_vals = [random.sample(self.domain.feature_values[feat], 1) for feat in high_cal_features]
@@ -58,12 +60,12 @@ class ModelMLModel(models.Model):
 				case_arr = case.split("-")
 				if (case_arr[self.domain.features.index(high_cal_features[0])] == high_cal_features_vals[0] or
 					case_arr[self.domain.features.index(high_cal_features[1])] == high_cal_features_vals[1]):
-					scalibration[case] = .05
+					calibration[case] = good_calibration_std
 				else:
-					calibration[case] = .20
+					calibration[case] = bad_calibration_std
 		else: #calibration == 0, not well-calibrated for all
 			for case in self.domain.cases:
-				calibration[case] = .20
+				calibration[case] = bad_calibration_std
 		
 		batched_accuracy = copy.deepcopy(accuracy)
 		
@@ -103,14 +105,14 @@ class ModelMLModel(models.Model):
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
 
 		if (self.update_type_field == 1): #immediate updates
-			self.batch_update(case)
+			self.batch_update()
 	
 	def ground_truth(self, case):
 		case_arr = case.split("-")
-
-		if (case_arr[3] == 'high' and (case_arr[0] == 1 or case_arr[1] == 1) and case_arr[2] == 0):
+		print('case',case_arr)
+		if (case_arr[3] == 'High' and (int(case_arr[0]) == 1 or int(case_arr[1]) == 1) and int(case_arr[2]) == 0):
 			return 1
-		elif (case_arr[3] == 'norm' and case_arr[0] == 1 and case_arr[1] == 1):
+		elif (case_arr[3] == 'Norm' and int(case_arr[0]) == 1 and int(case_arr[1]) == 1):
 			return 1
 		return 0
 
@@ -217,10 +219,10 @@ class ModelUserResponse(models.Model):
 
 
 	USER_DISAGREE_REASON_RESPONSES = (
-		('a','The model is typically wrong in this class'),
-		('b','The model is generally incorrect'),
-		('c','The model displayed low confidence'),
-		('d','I was confident I was right based on the patient profile'),
+		('a','The AI is typically wrong for these types of examples'),
+		('b','The AI is generally incorrect'),
+		('c','The AI displayed low confidence'),
+		('d','I was confident I was right based on the current input/info'),
 		('e','Other: Free input')
 
 	)

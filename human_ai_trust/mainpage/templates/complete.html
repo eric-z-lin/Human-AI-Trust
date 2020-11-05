@@ -1,0 +1,22 @@
+{% extends "template.html" %}
+
+{% block content %}
+<div class="container-fluid landing-page-bg" style="height: 100vh; padding-top: 1vh;">
+<h2>Directions</h2>
+	<p> 
+		Thank you, {{ name }}, for participating in our experiment! 
+	</p>
+	<p> 
+		Your final score is {{ score }}.
+	</p>
+	<br />
+
+<!-- <form action="/mainpage/start_experiment" method="post">
+	{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit">
+</form> -->
+<!-- <a href='/mainpage/'>Start experiment</a> -->
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.min.js" integrity="sha256-qM7QTJSlvtPSxVRjVWNM2OfTAz/3k5ovHOKmKXuYMO4=" crossorigin="anonymous"></script>
+{% endblock %}	

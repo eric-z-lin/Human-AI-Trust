@@ -14,9 +14,27 @@
 
         <!-- CONTENT -->
         <div class="row" style="height: 70vh; background: #c7e6f7; padding: 0; border-radius: 10px;">
+          <h2>Patient Profile</h2>
+          <ul>
+            {% for key, value in feature_display_dict.items %}
+              <li><b>{{key}}</b>: {{value}}</li>
+            {% endfor %}
+          </ul>
+        </div>
 
+        <div class="row" style="height: 70vh; background: #c7e6f7; padding: 0; border-radius: 10px;">
+          Your prediction: <span id="ai-prediction" style="color: blue;">{{ user_prediction }}</span>
+          <br>
+          AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_prediction }}</span>
+          <br>
+          Ground Truth: <span id="truth" style="color: blue;">{{ ground_truth }}</span>
+        </div>
           
-
+          <form action="{% url 'patient_result' %}" method="POST">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary" value="next-trial" name="next-trial">Next patient</button>
+            </div>
+          </form>
           
 
         </div>
