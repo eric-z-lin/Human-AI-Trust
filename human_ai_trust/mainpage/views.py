@@ -6,6 +6,7 @@ from mainpage.models import *
 # Create your views here.
 
 from django.http import HttpResponse, HttpResponseRedirect
+import csv
 
 
 
@@ -68,6 +69,10 @@ def index(request):
 
 		request.session['user_response_id'] = new_user_response.id
 
+		# Build forms
+		trustForm = UserTrustForm()
+		updateForm = UpdateForm()
+
 
 		context = {
 		    # 'feature_dict': feature_dict,
@@ -75,6 +80,8 @@ def index(request):
 		    'ml_confidence': str(model_confidence) + "%",
 		    'feature_display_dict': feature_display_dict,
 		    'user_response': new_user_response,
+		    'form1': UserTrustForm(),
+		    'form2': UpdateForm(),
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -166,12 +173,35 @@ def start_experiment(request):
 	return render(request, 'start_experiment.html', context=context)
 
 
+class UpdateForm(forms.Form):
+	TRUST_CHOICES = (
+		(0, "Not at all"),
+		(1, "Not really"),
+		(2, "Indifferent"),
+		(3, "A little"),
+		(4, "A lot"),
+	)
+	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES)
+	field_disagreement_choice = forms.ChoiceField(label="Why do you disagree with the AI?", choices = ModelUserResponse.USER_RESPONSES)
+	field_disagreement_text = forms.CharField(label='Reason for disagreement', max_length=160)
+
+
+class UserTrustForm(forms.Form):
+	TRUST_CHOICES = (
+		(0, "Not at all"),
+		(1, "Not really"),
+		(2, "Indifferent"),
+		(3, "A little"),
+		(4, "A lot"),
+	)
+	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES)
+
 def patient_result(request):
 	""" View function for updating userResponse and generating patient result page """
 
 	# Check which button got pressed
+	# if request.POST.get("positive-button"):
 
-	if request.POST.get("positive-button"):
 
 	# Query for model, experiment case, user response
 	# Load session Id
@@ -204,6 +234,10 @@ def write_to_csv(user_response):
 					user_response.field_instance_ground_truth, user_response.field_user_prediction,
 					user_response.field_user_did_update, user_response.field_user_disagree_reason_choices, 
 					user_response.field_user_disagree_reason_freetext]
+
+	# TODO: Add trust values
+
+
 	with open('experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:
 		writer = csv.writer(f)
 		writer.writerow(fields)
