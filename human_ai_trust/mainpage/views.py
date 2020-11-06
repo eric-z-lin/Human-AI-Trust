@@ -9,7 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 import csv
 
 CONST_BATCH_UPDATE_FREQUENCY = 2
-MAX_TRIALS = 15
+MAX_TRIALS = 50
 
 
 
