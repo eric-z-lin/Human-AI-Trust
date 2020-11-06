@@ -1,0 +1,59 @@
+{% extends "template.html" %}
+
+{% block content %}
+  <div class="container-fluid" style="height: 100vh; padding-top: 1vh">
+    <div class="row">
+      <div class="col-10 offset-1" style="border: thin solid grey; border-radius: 10px;">
+
+        <!-- HEADING -->
+        <div class="row d-flex justify-content-center" style="height: 10vh; padding: 0; background: lightskyblue; border-radius: 10px;">
+          <div class="align-self-center">
+            <h1>Human-AI Team Diagnosis</h1>
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="row" style="height: 35vh; background: lightgreen; padding: 20; border-radius: 10px;">
+
+          <div class="col-6">
+            <br>
+            <br>
+            <h2>Patient Profile</h2>
+            <ul>
+              {% for key, value in feature_display_dict.items %}
+                <li><b>{{key}}</b>: {{value}}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        
+          <div class="col-6">
+            <br>
+            <br>
+            Your prediction: <span id="ai-prediction" style="color: blue;">{{ user_prediction }}</span>
+            <br>
+            AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_prediction }}</span>
+            <br>
+            Ground Truth: <span id="truth" style="color: blue;">{{ ground_truth }}</span>
+            <br>
+            Your score has been updated by {{score_update}}. You now have {{field_score}} points.
+            <br>
+
+            <form action="{% url 'patient_result' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary" value="next-trial" name="next-trial">Next patient</button>
+              </div>
+            </form>
+            
+          </div>
+        </div>       
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+    
+  
+{% endblock %}

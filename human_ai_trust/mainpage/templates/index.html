@@ -80,8 +80,10 @@
                     <br>
                     AI's confidence: <span id="ai-prediction" style="color: blue;">{{ ml_confidence }}</span>
                     <br>
+                    Ground Truth: <span id="truth" style="color: blue;">{{ ground_truth }}</span>
                     <br>
-                    Your diagnosis: <br>
+                    <br>
+                    Your diagnosis: <span id="user-diagnosis"> </span> <br>
                      <!-- <form method="POST">
                         {% csrf_token %} -->
                       <button type="submit" class="btn btn-success" id="positive-button" data-toggle="modal" data-target="#agreeModal">Positive</button>
@@ -99,32 +101,14 @@
                               <span aria-hidden="true">&times;</span>
                             </button>
                           </div>
-                          <form action="{% url 'index' %}" method="GET">
+                          <form action="{% url 'patient_result' %}" method="POST">
                             {% csrf_token %}
                             <div class="modal-body">
-                              <ol>
-                                <li> How much do you trust the AI?
-                                <div class="form-check">
-                                  <input type="radio" class="form-check-input" name="radio" id="exampleCheck1">
-                                  <label class="form-check-label" for="exampleCheck1">Not at all</label>
-                                  <br>
-                                  <input type="radio" class="form-check-input" name="radio" id="exampleCheck2">
-                                  <label class="form-check-label" for="exampleCheck2">Not really</label>
-                                  <br>
-                                  <input type="radio" class="form-check-input" name="radio" id="exampleCheck3">
-                                  <label class="form-check-label" for="exampleCheck3">Indifferent</label>
-                                  <br>
-                                  <input type="radio" class="form-check-input" name="radio" id="exampleCheck4">
-                                  <label class="form-check-label" for="exampleCheck4">A little</label>
-                                  <br>
-                                  <input type="radio" class="form-check-input" name="radio" id="exampleCheck5">
-                                  <label class="form-check-label" for="exampleCheck5">A lot</label>
-                                </div>
-                              </ol>
+                              {{ form1.as_p }}
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                              <button type="submit" class="btn btn-primary">Next patient</button>
+                              <button type="submit" class="btn btn-primary" value="agree" name="agree">Next patient</button>
                             </div>
                           </form>
                         </div>
@@ -141,47 +125,15 @@
                               <span aria-hidden="true">&times;</span>
                             </button>
                           </div>
-                          <form action="{% url 'index' %}" method="GET">
+                          <form action="{% url 'patient_result' %}" method="POST">
                             {% csrf_token %}
                             <div class="modal-body">
-                              <ol>
-                                  <li> How much do you trust the AI?
-                                  <div class="form-check">
-                                    <input type="radio" class="form-check-input" name="radio" id="exampleCheck1">
-                                    <label class="form-check-label" for="exampleCheck1">Not at all</label>
-                                    <br>
-                                    <input type="radio" class="form-check-input" name="radio" id="exampleCheck2">
-                                    <label class="form-check-label" for="exampleCheck2">Not really</label>
-                                    <br>
-                                    <input type="radio" class="form-check-input" name="radio" id="exampleCheck3">
-                                    <label class="form-check-label" for="exampleCheck3">Indifferent</label>
-                                    <br>
-                                    <input type="radio" class="form-check-input" name="radio" id="exampleCheck4">
-                                    <label class="form-check-label" for="exampleCheck4">A little</label>
-                                    <br>
-                                    <input type="radio" class="form-check-input" name="radio" id="exampleCheck5">
-                                    <label class="form-check-label" for="exampleCheck5">A lot</label>
-                                  </div>                             
-
-                                  <li> Why did you disagree with the AI?
-                                    <div class="form-check">
-                                      {% for option in user_response.USER_RESPONSES %}
-                                        <input class="form-check-input" type="radio" name="radio" id="{{option.0}}" value={{option.0}}>
-                                        <label class="form-check-label" for="{{option.0}}">
-                                          {{option.1}} 
-                                        </label>  <br>
-                                      {% endfor %}
-                                    </div>
-
-                                    <li> 
-                                      <label for="exampleFormControlTextarea1">Explanation for disagreement</label>
-                                      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
-                                </ol>
+                              {{ form2.as_p }}                              
                             </div>
                             <div class="modal-footer">
                               <p style="color:gray; font-size: 12px;"> You can update the AI with your own diagnosis. Note that if your diagnosis is wrong, updating the AI may decrease its accuracy. </p>
-                              <button type="submit" class="btn btn-secondary">Don't Update</button>
-                              <button type="submit" class="btn btn-primary">Update AI</button>
+                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update">Don't Update</button>
+                              <button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update">Update AI</button>
                             </div>
                           </form>
                         </div>
@@ -192,8 +144,9 @@
                 <!-- Score -->
                 <div class = "row justify-content-center" style="height: 50%;">
                   <div id="scoreDiv" class = "align-self-center" style="height:100%; width:100%">
-                    <h3> Current Score: <span id="score">20</span> pts</h3>
-                    <p> You have diagnosed <span id="score">2</span> out of 50 patients.</p>
+                    <h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
+                    <p> You have diagnosed <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }} patients.</p>
+                    <p> Name: {{name}}</p>
                   </div>
                 </div>
               </div>
@@ -227,6 +180,7 @@
     {% endfor %} -->
 
     <script>
+      // Mapping button to correct modal
       let prediction = document.getElementById('ai-prediction');
       if (prediction.innerHTML === 'Positive') {
         document.getElementById('negative-button').setAttribute("data-target", "#disagreeModal");
@@ -234,6 +188,13 @@
       else {
         document.getElementById('positive-button').setAttribute("data-target", "#disagreeModal");
       }
+      // Storing clicked button in secret field
+      document.getElementById("negative-button").addEventListener("click", function (d) {
+        document.getElementById("user-diagnosis").innerHTML = "Negative";
+      });
+      document.getElementById("positive-button").addEventListener("click", function (d) {
+        document.getElementById("user-diagnosis").innerHTML = "Positive";
+      });
     </script>
   
 {% endblock %}
