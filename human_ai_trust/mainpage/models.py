@@ -242,8 +242,8 @@ class ModelUserResponse(models.Model):
 	# field_ml_accuracy = models.DecimalField(max_digits=4, decimal_places=4, help_text="ML accuracy at time of question")
 	field_ml_accuracy = models.TextField(blank=True, null=True, default='{}', help_text="ML accuracy at time of question -- json dict")
 	field_ml_calibration = models.TextField(blank=True, null=True, default='{}', help_text="ML calibration at time of question -- json dict")
-    field_ml_prediction = models.IntegerField(null=True, help_text="Actual ML prediction")
-    field_ml_confidence = models.DecimalField(null=True, help_text="Actual ML confidence")
+	field_ml_prediction = models.IntegerField(null=True, help_text="Actual ML prediction")
+	field_ml_confidence = models.DecimalField(null=True, help_text="Actual ML confidence")
 	field_instance_ground_truth = models.IntegerField(null=True, help_text="Ground truth label")
 
 	field_user_prediction = models.IntegerField(null=True, help_text="User prediction")
