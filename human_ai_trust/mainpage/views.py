@@ -9,7 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 import csv
 
 CONST_BATCH_UPDATE_FREQUENCY = 2
-MAX_TRIALS = 5
+MAX_TRIALS = 15
 
 
 
@@ -300,10 +300,13 @@ def patient_result(request):
 	print('ground truth',user_response.field_instance_ground_truth)
 
 	# Set scores
+	score_update = 0
 	if user_response.field_instance_ground_truth == user_response.field_user_prediction:
 		experiment.field_score += 2
+		score_update = 2
 	else:
 		experiment.field_score += -4
+		score_update = -4
 
 
 	user_response.save()
@@ -319,10 +322,11 @@ def patient_result(request):
 
 	context = {
 		'feature_display_dict': feature_display_dict,
-		'ml_prediction': ml_prediction,
-		'user_prediction': user_response.field_user_prediction,
-		'ground_truth': user_response.field_instance_ground_truth
-
+		'ml_prediction': 'Positive' if (ml_prediction == 1) else 'Negative',
+		'user_prediction': 'Positive' if (user_response.field_user_prediction == 1) else 'Negative',
+		'ground_truth': 'Positive' if (user_response.field_instance_ground_truth == 1) else 'Negative',
+		'score_update': score_update,
+		'field_score': experiment.field_score,
 	}
 
 	return render(request, 'patient_result.html', context=context)
