@@ -39,15 +39,15 @@ class ModelMLModel(models.Model):
 	# Methods
 	def initialize(self, performance, calibration, update):
 		good_calibration_std = 0.02
-		bad_calibration_std = 0.05
+		bad_calibration_std = 0.035
 
 		accuracy = {}
 		if (performance == 1): #good model
 			for case in self.domain.cases:
-				accuracy[case] = 0.75
+				accuracy[case] = 0.85
 		else: #performance == 0, poor model
 			for case in self.domain.cases:
-				accuracy[case] = 0.5
+				accuracy[case] = 0.70
 		
 		calibration = {} #stores the standard deviation
 		if (calibration == 2): #well-calibrated for all
@@ -83,14 +83,14 @@ class ModelMLModel(models.Model):
 
 		if(user_prediction != gt): #user was incorrect, model becomes slightly worse
 			#update the partiular example
-			batched_accuracy[case] = batched_accuracy[case]*0.9
+			batched_accuracy[case] = batched_accuracy[case]*0.92
 			#update related classes
 			related = random.sample(self.domain.features, 2)
 			for case2 in self.domain.cases:
 				case2_arr = case2.split("-")
 				if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
 					case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
-					batched_accuracy[case2] = batched_accuracy[case2]*0.92
+					batched_accuracy[case2] = batched_accuracy[case2]*0.95
 		else: #user was correct, model becomes slightly better
 			#update the particular example
 			batched_accuracy[case] = 1.0
@@ -100,7 +100,7 @@ class ModelMLModel(models.Model):
 				case2_arr = case2.split("-")
 				if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
 					case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
-					batched_accuracy[case2] += (1-batched_accuracy[case2])*0.2
+					batched_accuracy[case2] += (1-batched_accuracy[case2])*0.3
 		
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
 
@@ -110,11 +110,19 @@ class ModelMLModel(models.Model):
 	def ground_truth(self, case):
 		case_arr = case.split("-")
 		print('case',case_arr)
+		"""
 		if (case_arr[3] == 'High' and (int(case_arr[0]) == 1 or int(case_arr[1]) == 1) and int(case_arr[2]) == 0):
 			return 1
 		elif (case_arr[3] == 'Norm' and int(case_arr[0]) == 1 and int(case_arr[1]) == 1):
 			return 1
 		return 0
+		"""
+		if(case_arr[2] == 1):
+			return 0
+		elif(case_arr[3] == 'High' and case_arr[0] == 1):
+			return 1
+		elif(case_arr[3] == 'Norm' and case_arr[1] == 1):
+			return 1
 
 	def model_prediction(self, case):
 		gt = self.ground_truth(case)
@@ -128,7 +136,7 @@ class ModelMLModel(models.Model):
 			prediction = abs(1-gt)
 		
 		confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
-		confidence = min(max(confidence, 0.0),1.0)
+		confidence = min(max(confidence, 0.5000),1.0)
 		return [prediction, confidence, gt]
 
 	# def generated_patient_to_case(self, generated_patient):
@@ -243,7 +251,7 @@ class ModelUserResponse(models.Model):
 	field_ml_accuracy = models.TextField(blank=True, null=True, default='{}', help_text="ML accuracy at time of question -- json dict")
 	field_ml_calibration = models.TextField(blank=True, null=True, default='{}', help_text="ML calibration at time of question -- json dict")
 	field_ml_prediction = models.IntegerField(null=True, help_text="Actual ML prediction")
-	field_ml_confidence = models.DecimalField(null=True, help_text="Actual ML confidence")
+	field_ml_confidence = models.DecimalField(null=True, help_text="Actual ML confidence", decimal_places=5, max_digits=10)
 	field_instance_ground_truth = models.IntegerField(null=True, help_text="Ground truth label")
 
 	field_user_prediction = models.IntegerField(null=True, help_text="User prediction")

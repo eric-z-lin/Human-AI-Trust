@@ -109,7 +109,8 @@ class InitExperimentForm(forms.Form):
 
 	CALIBRATION_CHOICES =( 
 		(0, "Pizza"),
-		(1, "Bagel")
+		(1, "Bagel"),
+		(2, "Pho")
 	)
 	field_ml_model_calibration = forms.ChoiceField(choices = CALIBRATION_CHOICES)
 
