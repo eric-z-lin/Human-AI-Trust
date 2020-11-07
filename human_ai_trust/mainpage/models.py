@@ -117,12 +117,14 @@ class ModelMLModel(models.Model):
 			return 1
 		return 0
 		"""
-		if(case_arr[2] == 1):
+		if(case_arr[2] == '1'):
 			return 0
-		elif(case_arr[3] == 'High' and case_arr[0] == 1):
+		elif(case_arr[3] == 'High' and case_arr[0] == '1'):
 			return 1
-		elif(case_arr[3] == 'Norm' and case_arr[1] == 1):
+		elif(case_arr[3] == 'Norm' and case_arr[1] == '1'):
 			return 1
+		else:
+			return 0
 
 	def model_prediction(self, case):
 		gt = self.ground_truth(case)

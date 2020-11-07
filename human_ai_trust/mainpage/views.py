@@ -73,6 +73,7 @@ def index(request):
 		new_user_response.save()
 
 		request.session['user_response_id'] = new_user_response.id
+		print('index_ur_id', new_user_response.id)
 
 		# Build forms
 		trustForm = UserTrustForm()
@@ -159,6 +160,7 @@ def start_experiment(request):
 
 			# Session
 			request.session['experiment_id'] = new_experiment.id
+			request.session['batch_update_requested'] = False
 			print('session start experiment', request.session['experiment_id'])
 
 			return HttpResponseRedirect('/mainpage/')
@@ -272,7 +274,7 @@ def patient_result(request):
 			user_response.field_user_disagree_reason_freetext = form.cleaned_data['field_disagreement_text']
 
 
-
+	update_bool = False
 		# Check which button got pressed
 	if request.POST.get("disagree-update"):
 		# Create a form instance with the submitted data
@@ -291,11 +293,21 @@ def patient_result(request):
 			ml_model.model_update(user_response.field_data_point_string, 
 				user_response.field_user_prediction, user_response.field_instance_ground_truth)
 
+			if experiment.field_ml_model_update_type == 1:
+				update_bool = True
+
+			request.session['batch_update_requested'] = True
+
 	# if updatetype is 1, it'll handle updating on its own
 	if experiment.field_ml_model_update_type == 2 and experiment.field_patient_number%CONST_BATCH_UPDATE_FREQUENCY == 0:
+		if request.session['batch_update_requested']:
+			update_bool = True
+			request.session['batch_update_requested'] = False
 		ml_model.batch_update()
 
 
+
+	print('user_response_id', user_response_id)
 	print('user', user_response.field_user_prediction)
 	print('ml_prediction', ml_prediction)
 	print('ground truth',user_response.field_instance_ground_truth)
@@ -328,6 +340,8 @@ def patient_result(request):
 		'ground_truth': 'Positive' if (user_response.field_instance_ground_truth == 1) else 'Negative',
 		'score_update': score_update,
 		'field_score': experiment.field_score,
+		'result_color': 'lightgreen' if (user_response.field_user_prediction == user_response.field_instance_ground_truth) else 'lightcoral',
+		'update_bool': update_bool,
 	}
 
 	return render(request, 'patient_result.html', context=context)
