@@ -17,64 +17,20 @@
 
           <!-- LEFT -->
           <div class="col-7">
-            <div class="row" style="background: ghostwhite;">
-              <div id="stateCarousel" class="carousel slide" data-ride="carousel" style="width: 100%">
-                <div class="carousel-inner">
 
-                  <!-- Directions -->
-                  <div class="carousel-item">
-                    <div class="col">
-                      <div class="row" style="height: 70vh; background: rgba(120,180,255,0.2); padding: 1vh">
-
-                        <h2>Directions</h2>
-                        <p> 
-                        <b>Objective</b>: You will see a series of 50 patients and the objective is to diagnose them with a mysterious new flu-like illness called NOVID-20 as either (1) positive or (2) negative.<br>
-
-                        <b>Info</b>: For each patient, you will see information about their health, including presence of cough and chills, body temperature, blood pressure, and weight. Note: no prior knowledge of medicine is needed nor expected for these tasks. <br>
-
-                        <b>AI</b>: You will have the help of an AI tool that predicts whether each patient is positive or negative for NOVID-20. You can either choose to go with the AI’s prediction or manually override and select the other diagnosis. <br>
-
-                        <b>Updating the AI</b>: The AI isn't always correct in diagnosing patients. When you disagree with the AI prediction, you can help the AI learn from its mistakes by clicking the update button. However, you will need to commit to updating the model before seeing whether or not the diagnosis was correct -- so think carefully! <i>Be warned, updating the AI when you are incorrect (and the model is correct) will lead to a decrease in its performance for future rounds</i><br>
-
-                        <b>Points</b>: Everytime you diagnose a patient, you will be told whether your decision was right or wrong and how many points you gained. <i>Your objective is to maximize the number of points you have at the end</i>. For every correct diagnosis, you <i> gain 2 points</i> and for every incorrect diagnosis, you <i>lose 4 points</i>.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Task -->
-                  <div class="carousel-item active">
-                    <div class="col">
-                      <div class="row" style="height: 70vh; background: #c7e6f7; padding: 1vh;">
-                        <div id="task" style="height: 100%; width:100%; background: #c7e6f7;">
-                          <h2>Patient Profile</h2>
-                          <ul>
-                            {% for key, value in feature_display_dict.items %}
-                              <li><b>{{key}}</b>: {{value}}</li>
-                            {% endfor %}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <div class="row" style="background: #c7e6f7; padding: 2vh;">
+              <div id="task" style="height: 100%; width:100%; background: #c7e6f7;">
+                <h2>Patient Profile</h2>
+                <ul>
+                  {% for key, value in feature_display_dict.items %}
+                    <li><b>{{key}}</b>: {{value}}</li>
+                  {% endfor %}
+                </ul>
               </div>
             </div>
-          </div>
 
-          <!-- RIGHT -->
-          <div class="col-5">
-            <div class="row" style="height: 15%; background: #c7e6f7; padding-left: 2vh; padding-bottom: 1vh; padding-right: 1vh; padding-top: 1vh">
-                  <!-- Default checked -->
-                  <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="customSwitch1"  checked>
-                    <label class="custom-control-label" for="customSwitch1"  onclick="switchView()">View directions</label>
-                  </div>
-            </div>
-            <div class="row justify-content-center" style="height: 85%; width: 100%; background: #c7e6f7; padding-left: 1vh; padding-bottom: 2vh; padding-right: 1vh; padding-top: 0vh">
-              <div class="col-12" style="width: 100%;">
-                <!-- Diagnose-->
-                <div class = "row justify-content-center" style="height: 50%; width: 100%;">
+            <!-- Diagnose-->
+                <div class = "row justify-content-center" style="width: 100%; padding: 2vh;">
                   <div id="buttonDiv" class = "align-self-center" style="width:100%;">
                     AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_model_prediction }}</span>
                     <br>
@@ -138,12 +94,50 @@
                     </div>
                   </div>
                 </div>
+          </div>
+
+          <!-- RIGHT -->
+          <div class="col-5">
+            <div class="row" style="height: 15%; background: #c7e6f7; padding-left: 2vh; padding-bottom: 1vh; padding-right: 1vh; padding-top: 1vh">
+                  <!-- View Directions -->
+                   <button class="btn btn-info" data-toggle="modal" data-target="#directionsModal">View Directions</button>
+                  <div class="modal fade" id="directionsModal" tabindex="-1" role="dialog" aria-labelledby="agreeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="directionsModalLabel">Directions</h5>
+                          </div>
+
+                          <p> 
+                          <b>Objective</b>: You will see a series of 50 patients and the objective is to diagnose them with a mysterious new flu-like illness called NOVID-20 as either (1) positive or (2) negative.<br>
+
+                          <b>Info</b>: For each patient, you will see information about their health, including presence of cough and chills, body temperature, blood pressure, and weight. Note: no prior knowledge of medicine is needed nor expected for these tasks. <br>
+
+                          <b>AI</b>: You will have the help of an AI tool that predicts whether each patient is positive or negative for NOVID-20. You can either choose to go with the AI’s prediction or manually override and select the other diagnosis. <br>
+
+                          <b>Updating the AI</b>: The AI isn't always correct in diagnosing patients. When you disagree with the AI prediction, you can help the AI learn from its mistakes by clicking the update button. However, you will need to commit to updating the model before seeing whether or not the diagnosis was correct -- so think carefully! <i>Be warned, updating the AI when you are incorrect (and the model is correct) will lead to a decrease in its performance for future rounds</i><br>
+
+                          <b>Points</b>: Everytime you diagnose a patient, you will be told whether your decision was right or wrong and how many points you gained. <i>Your objective is to maximize the number of points you have at the end</i>. For every correct diagnosis, you <i> gain 2 points</i> and for every incorrect diagnosis, you <i>lose 4 points</i>.
+                          </p>
+                        </div>
+                      </div>
+                  </div>
+            </div>
+            <div class="row justify-content-center" style="height: 85%; width: 100%; background: #c7e6f7; padding-left: 1vh; padding-bottom: 2vh; padding-right: 1vh; padding-top: 0vh">
+              <div class="col-12" style="width: 100%;">
+                
                 <!-- Score -->
                 <div class = "row justify-content-center" style="height: 50%;">
                   <div id="scoreDiv" class = "align-self-center" style="height:100%; width:100%">
-                    <h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
-                    <p> You are diagnosing <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }} patients.</p>
                     <p> Name: {{name}}</p>
+                    <h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
+                    <p> You are diagnosing patient number <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }}.</p>
+                    <div class="progress">
+                      <div class="progress-bar progress-bar-info" role="progressbar"
+                      aria-valuenow="{{ percent_diagnosed }}" aria-valuemin="0" aria-valuemax="100" style="width:{{percent_diagnosed}}%">
+                        {{ percent_diagnosed }}%
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -91,8 +91,9 @@ def index(request):
 		    'score': experiment.field_score,
 		    'patient_num': experiment.field_patient_number,
 		    'MAX_TRIALS': MAX_TRIALS,
+		    'percent_diagnosed': round(experiment.field_patient_number * 100 / MAX_TRIALS),
 		    'name':experiment.field_user_name,
-		    'ground_truth': new_user_response.field_instance_ground_truth
+		    'ground_truth': new_user_response.field_instance_ground_truth,
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -194,8 +195,8 @@ class UpdateForm(forms.Form):
 		(3, "A little"),
 		(4, "A lot"),
 	)
-	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES)
-	field_disagreement_choice = forms.ChoiceField(label="Why do you disagree with the AI?", choices = ModelUserResponse.USER_DISAGREE_REASON_RESPONSES)
+	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES, widget=forms.RadioSelect)
+	field_disagreement_choice = forms.ChoiceField(label="Why do you disagree with the AI?", choices = ModelUserResponse.USER_DISAGREE_REASON_RESPONSES, widget=forms.RadioSelect)
 	field_disagreement_text = forms.CharField(label='Reason for disagreement', max_length=160)
 
 
@@ -207,7 +208,7 @@ class UserTrustForm(forms.Form):
 		(3, "A little"),
 		(4, "A lot"),
 	)
-	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES)
+	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES, widget=forms.RadioSelect)
 
 def patient_result(request):
 	""" View function for updating user_response and generating patient result page """
@@ -248,7 +249,7 @@ def patient_result(request):
 	if request.POST.get("agree"):
 		print('reached AGREE')
 		# Create a form instance with the submitted data
-		form = UserTrustForm(request.POST)  # 2
+		form = UserTrustForm(request.POST, initial={'field_trust': 2})  # 2
 		# Validate the form
 		print('checking validity')
 		if form.is_valid(): 
@@ -262,7 +263,7 @@ def patient_result(request):
 	if request.POST.get("disagree-no-update"):
 		# Create a form instance with the submitted data
 		print('reached disagree-no-update')
-		form = UpdateForm(request.POST)  # 2
+		form = UpdateForm(request.POST, initial={'field_trust': 2})  # 2
 		# Validate the form
 		print('checking validity')
 		if form.is_valid(): 
@@ -279,7 +280,7 @@ def patient_result(request):
 	if request.POST.get("disagree-update"):
 		# Create a form instance with the submitted data
 		print('reached disagree-UPDATE')
-		form = UpdateForm(request.POST)  # 2
+		form = UpdateForm(request.POST, initial={'field_trust': 2})  # 2
 		# Validate the form
 		print('checking validity')
 		if form.is_valid(): 

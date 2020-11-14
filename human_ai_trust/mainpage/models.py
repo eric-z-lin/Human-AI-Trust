@@ -229,10 +229,10 @@ class ModelUserResponse(models.Model):
 
 
 	USER_DISAGREE_REASON_RESPONSES = (
-		('a','The AI is typically wrong for these types of examples'),
+		('a','The AI is typically wrong for these types of patients'),
 		('b','The AI is generally incorrect'),
 		('c','The AI displayed low confidence'),
-		('d','I was confident I was right based on the current input/info'),
+		('d','I was confident I was right based on the patient info'),
 		('e','Other: Free input')
 
 	)
