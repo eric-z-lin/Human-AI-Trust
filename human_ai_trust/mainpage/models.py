@@ -22,6 +22,19 @@ class Disease:
 					   self.feature_values['body_temp'][(i//3)%3] + "-" +
 					   self.feature_values['weight'][(i)%3] for i in range(2*2*2*3*3)]
 
+	def ground_truth(self, case):
+		case_arr = case.split("-")
+		print('case',case_arr)
+		
+		if(case_arr[2] == '1'):
+			return 0
+		elif(case_arr[3] == 'High' and case_arr[0] == '1'):
+			return 1
+		elif(case_arr[3] == 'Norm' and case_arr[1] == '1'):
+			return 1
+		else:
+			return 0
+
 # Create your models here.
 class ModelMLModel(models.Model):
 	domain = Disease()
@@ -106,28 +119,9 @@ class ModelMLModel(models.Model):
 
 		if (self.update_type_field == 1): #immediate updates
 			self.batch_update()
-	
-	def ground_truth(self, case):
-		case_arr = case.split("-")
-		print('case',case_arr)
-		"""
-		if (case_arr[3] == 'High' and (int(case_arr[0]) == 1 or int(case_arr[1]) == 1) and int(case_arr[2]) == 0):
-			return 1
-		elif (case_arr[3] == 'Norm' and int(case_arr[0]) == 1 and int(case_arr[1]) == 1):
-			return 1
-		return 0
-		"""
-		if(case_arr[2] == '1'):
-			return 0
-		elif(case_arr[3] == 'High' and case_arr[0] == '1'):
-			return 1
-		elif(case_arr[3] == 'Norm' and case_arr[1] == '1'):
-			return 1
-		else:
-			return 0
 
 	def model_prediction(self, case):
-		gt = self.ground_truth(case)
+		gt = domain.ground_truth(case)
 
 		accuracy = json.loads(self.accuracy_field)
 		calibration = json.loads(self.calibration_field)
@@ -200,7 +194,16 @@ class ModelExperiment(models.Model):
 		return case[:-1]
 
 	def generate_patient(self):
+		rand = random.random()
+		gt = 0
+		if(rand > 0.5):
+			gt = 1
+
 		patient = random.sample(self.domain.cases, 1)[0]
+
+		while(domain.ground_truth(patient) != gt):
+			patient = random.sample(self.domain.cases, 1)[0]
+
 		patient_arr = patient.split("-")
 		self.field_patient_number += 1
 		generated_patient = {} #features to value mapping
