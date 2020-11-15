@@ -230,23 +230,34 @@ class ModelUserResponse(models.Model):
 	# Continuous Features: body temp (>105, 105-95, 95>), weight (normal = 100)
 
 
-
-	USER_DISAGREE_REASON_RESPONSES = (
-		('a','The AI is typically wrong for these types of patients'),
-		('b','The AI is generally incorrect'),
-		('c','The AI displayed low confidence'),
-		('d','I was confident I was right based on the patient info'),
-		('e','Other: Free input')
+	# At every time step
+	USER_RELATIONSHIP_RESPONSES = (
+		(1,'I only use the AI\'s prediction.'),
+		(2, ''),
+		(3, 'I use the AI\'s prediction and my own knowledge equally.'),
+		(4, ''),
+		(5, 'I only use my own knowledge.')
 
 	)
+	field_user_relationship = models.IntegerField(null=True, choices=USER_RELATIONSHIP_RESPONSES, blank=True, 
+				default=3, help_text='Measure of user relationship with model')
 
+	# At every 10% interval time step
 	USER_TRUST_RESPONSES = (
-		(0, "Not at all"),
-		(1, "Not really"),
-		(2, "Indifferent"),
-		(3, "A little"),
-		(4, "A lot"),
+		(1, "Strongly disagree"),
+		(2, "Disagree"),
+		(3, "Neutral"),
+		(4, "Agree"),
+		(5, "Strongly agree"),
 	)
+	field_user_accuracy = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of perceived accuracy')
+	field_user_calibration = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of confidence calibration')
+	field_user_personal_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of confidence user in their own mental model')
+	field_user_AI_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of confidence / trust in AI')
 
 	# linking fields
 	field_data_point_string = models.CharField(max_length=20, help_text="Unique string to specify the input feature combo")
@@ -262,12 +273,12 @@ class ModelUserResponse(models.Model):
 	field_user_prediction = models.IntegerField(null=True, help_text="User prediction")
 	field_user_did_update = models.IntegerField(null=True, help_text="Whether or not user updated the model")
 
-	field_user_disagree_reason_choices = models.CharField(null=True, max_length=1, choices=USER_DISAGREE_REASON_RESPONSES, blank=True, 
-				default='a', help_text='If user does not use model prediction, ask why')
-	field_user_disagree_reason_freetext = models.TextField(null=True, help_text='If user chose "other", provide freetext box')
+	# field_user_disagree_reason_choices = models.CharField(null=True, max_length=1, choices=USER_DISAGREE_REASON_RESPONSES, blank=True, 
+	# 			default='a', help_text='If user does not use model prediction, ask why')
+	# field_user_disagree_reason_freetext = models.TextField(null=True, help_text='If user chose "other", provide freetext box')
 
-	field_user_trust = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
-				default=0, help_text='Measure of how much user trusts model')
+	# field_user_trust = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+	# 			default=0, help_text='Measure of how much user trusts model')
 
 
 	field_experiment = models.ForeignKey(ModelExperiment, on_delete=models.SET_NULL, blank=True, null=True)
