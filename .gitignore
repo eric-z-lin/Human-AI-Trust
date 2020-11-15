@@ -1,2 +1,5 @@
 .DS_Store
 human_ai_trust/mainpage/migrations/
+*.zip
+*CheXpert-v1.0-small*
+human_ai_trust/mainpage/dl_models/
