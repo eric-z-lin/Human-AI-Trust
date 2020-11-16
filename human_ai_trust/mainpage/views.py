@@ -25,7 +25,7 @@ def index(request):
 
 		# Get patient case
 		generated_patient = experiment.generate_patient()
-		case = experiment.generated_patient_to_case(generated_patient)
+		# case = experiment.generated_patient_to_case(generated_patient)
 
 		# Need to save here since generate_patient() updates the field_patient_number
 		experiment.save()
@@ -43,7 +43,7 @@ def index(request):
 
 
 		initUserResponse = {
-			"field_data_point_string": case,
+			"field_data_point_string": generated_patient,
 			"field_ml_accuracy":  json.dumps(ml_model.accuracy_field),
 			"field_ml_calibration": json.dumps(ml_model.calibration_field),
 			"field_ml_prediction": model_prediction,
@@ -103,11 +103,11 @@ def index(request):
 
 class InitExperimentForm(forms.Form):
 	user_name = forms.CharField(label='Your name', max_length=100)
-	ACCURACY_CHOICES =( 
-		(0, "Giraffe"),
-		(1, "Lion")
-	)
-	field_ml_model_accuracy = forms.ChoiceField(choices = ACCURACY_CHOICES)
+	# ACCURACY_CHOICES =( 
+	# 	(0, "Giraffe"),
+	# 	(1, "Lion")
+	# )
+	# field_ml_model_accuracy = forms.ChoiceField(choices = ACCURACY_CHOICES)
 
 	CALIBRATION_CHOICES =( 
 		(0, "Pizza"),
@@ -138,23 +138,27 @@ def start_experiment(request):
 
 			# Instantiate models
 			new_experiment = ModelExperiment()
-			new_experiment.field_ml_model_accuracy = form.cleaned_data['field_ml_model_accuracy']
+			# new_experiment.field_ml_model_accuracy = form.cleaned_data['field_ml_model_accuracy']
 			new_experiment.field_ml_model_calibration = form.cleaned_data['field_ml_model_calibration']
 			new_experiment.field_ml_model_update_type = form.cleaned_data['field_ml_model_update_type']
 			new_experiment.field_user_name = form.cleaned_data['user_name']
 
 			print('form params')
-			print(new_experiment.field_ml_model_accuracy)
+			# print(new_experiment.field_ml_model_accuracy)
 			print(new_experiment.field_ml_model_calibration)
 			print(new_experiment.field_ml_model_update_type)
 			print(new_experiment.field_user_name)
+			
 
 			ml_model = ModelMLModel()
 			ml_model.initialize(
-				performance=new_experiment.field_ml_model_accuracy, 
+				model_pickle_file = './mainpage/10k_cpu_model.model',
 				calibration=new_experiment.field_ml_model_calibration, 
 				update=new_experiment.field_ml_model_update_type
 			)
+
+			
+
 			new_experiment.field_model_ml_model = ml_model
 			ml_model.save()
 			new_experiment.save()
@@ -187,28 +191,42 @@ def start_experiment(request):
 	return render(request, 'start_experiment.html', context=context)
 
 
-class UpdateForm(forms.Form):
-	TRUST_CHOICES = (
-		(0, "Not at all"),
-		(1, "Not really"),
-		(2, "Indifferent"),
-		(3, "A little"),
-		(4, "A lot"),
+# Ask every 10% time steps
+class IntervalForm(forms.Form):
+	field_relationship = forms.ChoiceField(
+		label = "How would you describe your relationship with the AI?",
+		choices = ModelUserResponse.USER_RELATIONSHIP_RESPONSES,
+		widget = forms.RadioSelect
 	)
-	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES, widget=forms.RadioSelect)
-	field_disagreement_choice = forms.ChoiceField(label="Why do you disagree with the AI?", choices = ModelUserResponse.USER_DISAGREE_REASON_RESPONSES, widget=forms.RadioSelect)
-	field_disagreement_text = forms.CharField(label='Reason for disagreement', max_length=160)
-
-
-class UserTrustForm(forms.Form):
-	TRUST_CHOICES = (
-		(0, "Not at all"),
-		(1, "Not really"),
-		(2, "Indifferent"),
-		(3, "A little"),
-		(4, "A lot"),
+	field_perceived_accuracy = forms.ChoiceField(
+		label = "How strongly do you agree: The AI is as good as a highly competent person in diagnosing patients.",
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect
 	)
-	field_trust = forms.ChoiceField(label="How much do you trust the AI?", choices = TRUST_CHOICES, widget=forms.RadioSelect)
+	field_confidence_calibration = forms.ChoiceField(
+		label = "How strongly do you agree: I understand when the AI is certain in its prediction.",
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect
+	)
+	field_personal_confidence = forms.ChoiceField(
+		label = "How strongly do you agree: I am confident in my ability to diagnose patients without the AI.",
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect
+	)
+	field_AI_confidence = forms.ChoiceField(
+		label = "How strongly do you agree: The AI boosts my confidence in my ultimate diagnosis.",
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect
+	)
+
+# Ask every time step
+class ConstantForm(forms.Form):
+	field_relationship = forms.ChoiceField(
+		label = "How would you describe your relationship with the AI?",
+		choices = ModelUserResponse.USER_RELATIONSHIP_RESPONSES,
+		widget = forms.RadioSelect
+	)
+	
 
 def patient_result(request):
 	""" View function for updating user_response and generating patient result page """
@@ -223,10 +241,11 @@ def patient_result(request):
 
 	# Table for patient case
 	domain = ml_model.domain
-	feature_display_dict = {}
-	case_values = user_response.field_data_point_string.split('-')
-	for feat, case_value in zip(domain.features, case_values):
-		feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + case_value]
+
+	# feature_display_dict = {}
+	# case_values = user_response.field_data_point_string.split('-')
+	# for feat, case_value in zip(domain.features, case_values):
+	# 	feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + case_value]
 
 
 	if request.POST.get("next-trial"):
@@ -245,34 +264,42 @@ def patient_result(request):
 	print(request.POST.get("disagree-no-update"))
 	print(request.POST.get("disagree-update"))
 
-	# Check which button got pressed
-	if request.POST.get("agree"):
-		print('reached AGREE')
-		# Create a form instance with the submitted data
-		form = UserTrustForm(request.POST, initial={'field_trust': 2})  # 2
+	# Create a form instance with the submitted data
+	form = ConstantForm(request.POST)
+	if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
+		form = IntervalForm(request.POST)  # 2
 		# Validate the form
 		print('checking validity')
 		if form.is_valid(): 
 
 			# Instantiate models
-			user_response.field_user_trust = form.cleaned_data['field_trust']
+			user_response.field_user_relationship = form.cleaned_data['field_relationship']
+			user_response.field_user_perceived_accuracy = form.cleaned_data['field_perceived_accuracy']
+			user_response.field_user_calibration = form.cleaned_data['field_confidence_calibration']
+			user_response.field_user_personal_confidence = form.cleaned_data['field_personal_confidence']
+			user_response.field_user_AI_confidence = form.cleaned_data['field_AI_confidence']
+
 			user_response.field_user_prediction = ml_prediction
+	else:
+		form = ConstantForm(request.POST)
+		# Validate the form
+		print('checking validity')
+		if form.is_valid(): 
+
+			# Instantiate models
+			user_response.field_user_relationship = form.cleaned_data['field_relationship']
+			user_response.field_user_prediction = ml_prediction
+
+
+	# Check which button got pressed
+	if request.POST.get("agree"):
+		print('reached AGREE')
 
 
 	# Check which button got pressed
 	if request.POST.get("disagree-no-update"):
 		# Create a form instance with the submitted data
 		print('reached disagree-no-update')
-		form = UpdateForm(request.POST, initial={'field_trust': 2})  # 2
-		# Validate the form
-		print('checking validity')
-		if form.is_valid(): 
-
-			# Instantiate models
-			user_response.field_user_trust = form.cleaned_data['field_trust']
-			user_response.field_user_prediction = abs(1 - ml_prediction)
-			user_response.field_user_disagree_reason_choices = form.cleaned_data['field_disagreement_choice']
-			user_response.field_user_disagree_reason_freetext = form.cleaned_data['field_disagreement_text']
 
 
 	update_bool = False
@@ -280,19 +307,18 @@ def patient_result(request):
 	if request.POST.get("disagree-update"):
 		# Create a form instance with the submitted data
 		print('reached disagree-UPDATE')
-		form = UpdateForm(request.POST, initial={'field_trust': 2})  # 2
 		# Validate the form
 		print('checking validity')
 		if form.is_valid(): 
 
 			# Instantiate models
-			user_response.field_user_trust = form.cleaned_data['field_trust']
-			user_response.field_user_prediction = abs(1 - ml_prediction)
-			user_response.field_user_disagree_reason_choices = form.cleaned_data['field_disagreement_choice']
-			user_response.field_user_disagree_reason_freetext = form.cleaned_data['field_disagreement_text']
-
-			ml_model.model_update(user_response.field_data_point_string, 
-				user_response.field_user_prediction, user_response.field_instance_ground_truth)
+			
+			ml_model.model_update(
+				img_filename = field_data_point_string,
+				model_prediction = ml_prediction, 
+				user_prediction = user_response.field_user_prediction, 
+				gt = user_response.field_instance_ground_truth
+			)
 
 			if experiment.field_ml_model_update_type == 1:
 				update_bool = True
@@ -335,7 +361,8 @@ def patient_result(request):
 	# Render patient result page
 
 	context = {
-		'feature_display_dict': feature_display_dict,
+		# 'feature_display_dict': feature_display_dict,
+		'patient_img': field_data_point_string,
 		'ml_prediction': 'Positive' if (ml_prediction == 1) else 'Negative',
 		'user_prediction': 'Positive' if (user_response.field_user_prediction == 1) else 'Negative',
 		'ground_truth': 'Positive' if (user_response.field_instance_ground_truth == 1) else 'Negative',
@@ -364,12 +391,18 @@ def experiment_complete(request):
 
 
 def write_to_csv(user_response):
-	fields = [user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
-					user_response.field_ml_accuracy, user_response.field_ml_calibration,
-					user_response.field_ml_prediction,
-					user_response.field_instance_ground_truth, user_response.field_user_prediction,
-					user_response.field_user_did_update, user_response.field_user_disagree_reason_choices, 
-					user_response.field_user_disagree_reason_freetext, user_response.field_user_trust]
+	fields = [
+		user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
+		user_response.field_ml_accuracy, user_response.field_ml_calibration,
+		user_response.field_ml_prediction,
+		user_response.field_instance_ground_truth, user_response.field_user_prediction,
+		user_response.field_user_did_update,
+		user_response.field_user_relationship,
+		user_response.field_user_perceived_accuracy,
+		user_response.field_user_calibration,
+		user_response.field_user_personal_confidence,
+		user_response.field_user_AI_confidence
+	]
 
 
 	with open('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:

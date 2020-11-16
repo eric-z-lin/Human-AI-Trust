@@ -6,13 +6,41 @@ import numpy as np
 from PIL import Image
 import glob
 import pickle
+import os
 
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 
-#from update_model import *
+# from update_model import *
+
+class DenseNet121(nn.Module):
+    """Model modified.
+    The architecture of our model is the same as standard DenseNet121
+    except the classifier layer which has an additional sigmoid function.
+    """
+    def __init__(self, out_size):
+        super(DenseNet121, self).__init__()
+        # self.densenet121 = torchvision.models.densenet121(pretrained=True)
+        # self.densenet121 = torchvision.models.alexnet(pretrained=True)
+        self.densenet121 = torchvision.models.resnet18(pretrained=True)
+        num_ftrs = self.densenet121.fc.in_features
+        self.densenet121.fc = nn.Sequential(
+            nn.Linear(num_ftrs, out_size),
+            nn.Sigmoid()
+        )
+        for param in self.densenet121.parameters():
+            param.requires_grad = True
+
+        for param in self.densenet121.fc.parameters():
+            param.requires_grad = True
+
+
+
+    def forward(self, x):
+        x = self.densenet121(x)
+        return x
 
 class ModifiedDataset(Dataset):
 	def __init__(self, imgs, transform=None):
@@ -48,20 +76,28 @@ class ModifiedDataset(Dataset):
 class ImageDiagnosis:
 	def __init__(self, train_dir, test_dir):
 
-		self.train_imgs = [filename in glob.glob(img_dir+'/*.jpg')]
+		# print(os.getcwd())
+		img_dir = './mainpage/dataset/train_dir'
+		self.train_imgs = [glob.glob(img_dir+'/*.jpg')]
 		#image file name format: img_dir/case-diagnosis-name.png
 
 		self.feature_names = {'img': "Image"}
 		self.features = ['img']
-		self.feature_values = {'img': img_filenames}
+		# self.feature_values = {'img': img_filenames} ?????
+		self.feature_values = {'img': self.train_imgs}
+		"""
 		self.feature_value_names = {}
-		for f in img_filenames:
+		for f in self.train_imgs:
+			print(f)
 			self.feature_value_names[f] = ""
-
-		self.test_imgs = [filename in glob.glob(test_dir+'/*.jpg')]
+		"""
+		test_dir = './mainpage/dataset/test_dir'
+		self.test_imgs = [glob.glob(test_dir+'/*.jpg')]
 
 		self.cases = [0,1]
 
+		imgtransResize = (320, 320)
+		imgtransCrop = 224
 		normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 		transformList = []
 		#transformList.append(transforms.Resize(imgtransCrop))
@@ -82,11 +118,11 @@ class ImageDiagnosis:
 class ModelMLModel(models.Model):
 	domain = ImageDiagnosis("dataset/train_dir", "dataset/test_dir")
 	accuracy_field = models.TextField(blank=True, null=True, default='{}')
-	model_field = models.BinaryField()
+	model_field = models.BinaryField(default=b'"\'"')
 	calibration_field = models.TextField(blank=True, null=True, default='{}')
 	update_type_field = models.IntegerField()
 	batched_accuracy_field = models.TextField(blank=True, null=True, default='{}')
-	batched_model_field = models.BinaryField()
+	batched_model_field = models.BinaryField(default=b'"\'"')
 
 	# Metadata
 	class Meta: 
@@ -124,7 +160,11 @@ class ModelMLModel(models.Model):
 		else:
 			model = pickle.loads(self.model_field)
 		
-		test = [img if '/'+str(case)+'-' in img for img in self.domain.test_imgs]
+		# test = [(img if (('/'+str(case)+'-') in img)) for img in self.domain.test_imgs]
+		test = []
+		for img in self.domain.test_imgs:
+			if ('/'+str(case)+'-') in img:
+				test.append(img)
 
 		dataset = ModifiedDataset(test, self.domain.transformSequence)
 		dataLoader = DataLoader(dataset=dataset, batch_size=64, shuffle=False)
@@ -147,6 +187,11 @@ class ModelMLModel(models.Model):
 	def model_finetune(self, dataset, epochs=1):
 		model = pickle.loads(self.batched_model_field)
 
+		for param in model.densenet121.parameters():
+		    param.requires_grad = False
+		for param in model.densenet121.fc.parameters():
+		    param.requires_grad = True
+
 		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True)
 
 		model.train()
@@ -166,7 +211,9 @@ class ModelMLModel(models.Model):
 		self.batched_model_field = pickle.dumps(model)
 
 	def initialize(self, calibration, update, model_pickle_file):
-		self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))
+		model = torch.load(model_pickle_file)
+		self.model_field = pickle.dumps(model)
+		# self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))
 		self.batched_model_field = self.model_field
 
 		accuracy = {} #stores the accuracy for case 0 and case 1
@@ -203,19 +250,20 @@ class ModelMLModel(models.Model):
 		case = int(img_filename.split("/")[-1].split("-")[0])
 		transform = self.domain.transformSequence
 
-		#if(model_prediction != user_prediction): #user and model disagreed, accuracy update
-		dataset = ModifiedDataset(domain.train_imgs, transform)
-		dataset.add_data(img_filename, user_prediction, multiplier=5)
-
-		self.model_finetune(dataset, epochs=3)
-		for case in self.domain.cases: #update the accuracy
-			batched_accuracy[case] = self.model_inference_case(case, batched=1)
-
 		if(model_prediction == user_prediction): #user and model agreed, calibration update as well
 			if(user_prediction != gt): #user and model were incorrect, calibration decreases
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
 				calibration[case] = min(calibration[case]*0.9, 0.1)
+			mult = 2
+		else: #(model_prediction != user_prediction): #user and model disagreed, accuracy update
+			mult = 5
+		dataset = ModifiedDataset(self.domain.train_imgs, transform)
+		dataset.add_data(img_filename, user_prediction, multiplier=mult)
+
+		self.model_finetune(dataset, epochs=3)
+		for case in self.domain.cases: #update the accuracy
+			batched_accuracy[case] = self.model_inference_case(case, batched=1)
 
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
 		self.calibration_field = json.dumps(calibration)
@@ -255,7 +303,7 @@ class ModelExperiment(models.Model):
 
 	field_score = models.IntegerField(help_text="Current experiment score", default=0)
 
-	domain = ImageDiagnosis()
+	domain = ImageDiagnosis("dataset/train_dir", "dataset/test_dir")
 
 	def generate_patient(self):
 		generated_patient = random.sample(self.domain.train_imgs,1)[0]
@@ -291,7 +339,7 @@ class ModelUserResponse(models.Model):
 		(4, "Agree"),
 		(5, "Strongly agree"),
 	)
-	field_user_accuracy = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+	field_user_perceived_accuracy = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of perceived accuracy')
 	field_user_calibration = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence calibration')
