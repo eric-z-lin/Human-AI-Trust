@@ -58,7 +58,7 @@
                           <form action="{% url 'patient_result' %}" method="POST">
                             {% csrf_token %}
                             <div class="modal-body">
-                              {{ form1.as_p }}
+                              {{ correctForm.as_p }}
                             </div>
                             <div class="modal-footer">
                               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -82,7 +82,7 @@
                           <form action="{% url 'patient_result' %}" method="POST">
                             {% csrf_token %}
                             <div class="modal-body">
-                              {{ form2.as_p }}                              
+                              {{ correctForm.as_p }}                              
                             </div>
                             <div class="modal-footer">
                               <p style="color:gray; font-size: 12px;"> You can update the AI with your own diagnosis. Note that if your diagnosis is wrong, updating the AI may decrease its accuracy. </p>

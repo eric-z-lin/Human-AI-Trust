@@ -43,6 +43,7 @@ def index(request):
 		# for feat in domain.features:
 		# 	feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
 
+		print('hi', generated_patient)
 
 		initUserResponse = {
 			"field_data_point_string": generated_patient,
@@ -84,6 +85,10 @@ def index(request):
 		trustForm = IntervalForm()
 		updateForm = ConstantForm()
 
+		correctForm = IntervalForm()
+		if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
+			correctForm = ConstantForm()
+
 
 		context = {
 		    # 'feature_dict': feature_dict,
@@ -93,12 +98,14 @@ def index(request):
 		    'user_response': new_user_response,
 		    'form1': trustForm,
 		    'form2': updateForm,
+		    'correctForm': correctForm,
 		    'score': experiment.field_score,
 		    'patient_num': experiment.field_patient_number,
 		    'MAX_TRIALS': MAX_TRIALS,
 		    'percent_diagnosed': round(experiment.field_patient_number * 100 / MAX_TRIALS),
 		    'name':experiment.field_user_name,
 		    'ground_truth': new_user_response.field_instance_ground_truth,
+		    'patient_img': "." + generated_patient
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -319,7 +326,7 @@ def patient_result(request):
 			# Instantiate models
 			
 			ml_model.model_update(
-				img_filename = field_data_point_string,
+				img_filename = user_response.field_data_point_string,
 				model_prediction = ml_prediction, 
 				user_prediction = user_response.field_user_prediction, 
 				gt = user_response.field_instance_ground_truth
@@ -364,10 +371,11 @@ def patient_result(request):
 	write_to_csv(user_response)
 
 	# Render patient result page
+	print('hi', user_response.field_data_point_string)
 
 	context = {
 		# 'feature_display_dict': feature_display_dict,
-		'patient_img': field_data_point_string,
+		'patient_img': user_response.field_data_point_string,
 		'ml_prediction': 'Positive' if (ml_prediction == 1) else 'Negative',
 		'user_prediction': 'Positive' if (user_response.field_user_prediction == 1) else 'Negative',
 		'ground_truth': 'Positive' if (user_response.field_instance_ground_truth == 1) else 'Negative',
