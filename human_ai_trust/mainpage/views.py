@@ -144,7 +144,7 @@ def start_experiment(request):
 			new_experiment.field_user_name = form.cleaned_data['user_name']
 
 			print('form params')
-			print(new_experiment.field_ml_model_accuracy)
+			# print(new_experiment.field_ml_model_accuracy)
 			print(new_experiment.field_ml_model_calibration)
 			print(new_experiment.field_ml_model_update_type)
 			print(new_experiment.field_user_name)
