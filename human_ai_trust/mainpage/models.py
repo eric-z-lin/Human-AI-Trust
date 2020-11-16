@@ -203,10 +203,12 @@ class ModelMLModel(models.Model):
 		self.batched_model_field = pickle.dumps(model)
 
 	def initialize(self, calibration, update, model_pickle_file):
-		gpu_model = torch.load(model_pickle_file, map_location=torch.device('cpu'))
+		# gpu_model = torch.load(model_pickle_file, map_location=torch.device('cpu'))
 		nClasses = 2
+		# model = DenseNet121(nClasses)
+		# model = gpu_model.module 
 		model = DenseNet121(nClasses)
-		model = gpu_model.module 
+		model.load_state_dict(torch.load(model_pickle_file))
 
 		self.model_field = pickle.dumps(model)
 		# self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))

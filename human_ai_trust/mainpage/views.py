@@ -164,7 +164,7 @@ def start_experiment(request):
 
 			ml_model = ModelMLModel()
 			ml_model.initialize(
-				model_pickle_file = './mainpage/dl_models/10k_cpu_model.model',
+				model_pickle_file = './mainpage/dl_models/10k_cpu_model_state_dict.model',
 				calibration=new_experiment.field_ml_model_calibration, 
 				update=new_experiment.field_ml_model_update_type
 			)
