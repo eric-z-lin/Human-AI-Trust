@@ -8,6 +8,7 @@ from mainpage.models import *
 from django.http import HttpResponse, HttpResponseRedirect
 import csv
 
+
 CONST_BATCH_UPDATE_FREQUENCY = 2
 MAX_TRIALS = 50
 
@@ -25,12 +26,13 @@ def index(request):
 
 		# Get patient case
 		generated_patient = experiment.generate_patient()
+
 		# case = experiment.generated_patient_to_case(generated_patient)
 
 		# Need to save here since generate_patient() updates the field_patient_number
 		experiment.save()
 		
-		arr = ml_model.model_prediction(case)
+		arr = ml_model.model_prediction(generated_patient)
 		model_prediction = arr[0]
 		model_confidence = round(arr[1]*100, 1)
 		ground_truth = arr[2]
@@ -38,8 +40,8 @@ def index(request):
 		# Table for patient case
 		domain = ml_model.domain
 		feature_display_dict = {}
-		for feat in domain.features:
-			feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
+		# for feat in domain.features:
+		# 	feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
 
 
 		initUserResponse = {
@@ -65,8 +67,8 @@ def index(request):
 								field_instance_ground_truth = initUserResponse["field_instance_ground_truth"],
 								field_user_prediction = initUserResponse["field_user_prediction"],
 								field_user_did_update = initUserResponse["field_user_did_update"],
-								field_user_disagree_reason_choices = initUserResponse["field_user_disagree_reason_choices"],
-								field_user_disagree_reason_freetext = initUserResponse["field_user_disagree_reason_freetext"],
+								# field_user_disagree_reason_choices = initUserResponse["field_user_disagree_reason_choices"],
+								# field_user_disagree_reason_freetext = initUserResponse["field_user_disagree_reason_freetext"],
 								field_experiment = experiment
 							)
 
@@ -76,8 +78,11 @@ def index(request):
 		print('index_ur_id', new_user_response.id)
 
 		# Build forms
-		trustForm = UserTrustForm()
-		updateForm = UpdateForm()
+		# trustForm = UserTrustForm()
+		# updateForm = UpdateForm()
+
+		trustForm = IntervalForm()
+		updateForm = ConstantForm()
 
 
 		context = {
@@ -86,8 +91,8 @@ def index(request):
 		    'ml_confidence': str(model_confidence) + "%",
 		    'feature_display_dict': feature_display_dict,
 		    'user_response': new_user_response,
-		    'form1': UserTrustForm(),
-		    'form2': UpdateForm(),
+		    'form1': trustForm,
+		    'form2': updateForm,
 		    'score': experiment.field_score,
 		    'patient_num': experiment.field_patient_number,
 		    'MAX_TRIALS': MAX_TRIALS,
@@ -152,7 +157,7 @@ def start_experiment(request):
 
 			ml_model = ModelMLModel()
 			ml_model.initialize(
-				model_pickle_file = './mainpage/10k_cpu_model.model',
+				model_pickle_file = './mainpage/dl_models/10k_cpu_model.model',
 				calibration=new_experiment.field_ml_model_calibration, 
 				update=new_experiment.field_ml_model_update_type
 			)

@@ -12,35 +12,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
+# from mainpage.torchhelper import DenseNet121
+from torch.utils.data import DataLoader
 
 # from update_model import *
-
-class DenseNet121(nn.Module):
-    """Model modified.
-    The architecture of our model is the same as standard DenseNet121
-    except the classifier layer which has an additional sigmoid function.
-    """
-    def __init__(self, out_size):
-        super(DenseNet121, self).__init__()
-        # self.densenet121 = torchvision.models.densenet121(pretrained=True)
-        # self.densenet121 = torchvision.models.alexnet(pretrained=True)
-        self.densenet121 = torchvision.models.resnet18(pretrained=True)
-        num_ftrs = self.densenet121.fc.in_features
-        self.densenet121.fc = nn.Sequential(
-            nn.Linear(num_ftrs, out_size),
-            nn.Sigmoid()
-        )
-        for param in self.densenet121.parameters():
-            param.requires_grad = True
-
-        for param in self.densenet121.fc.parameters():
-            param.requires_grad = True
-
-
-
-    def forward(self, x):
-        x = self.densenet121(x)
-        return x
+from mainpage.torchhelper import DenseNet121
 
 class ModifiedDataset(Dataset):
 	def __init__(self, imgs, transform=None):
@@ -50,7 +26,10 @@ class ModifiedDataset(Dataset):
 		self.transform = transform
 
 		for file in self.image_names:
-			self.labels.append(int(file.split("/"[-1].split("-")[1])))
+			label = [0, 0] # one for each class 
+			index = int(file.split("/")[-1].split("-")[1])
+			label[index] = 1
+			self.labels.append(label)
 
 	def __getitem__(self, index):
 		"""Take the index of item and returns the image and its labels"""
@@ -66,7 +45,7 @@ class ModifiedDataset(Dataset):
 		for i in range(multiplier):
 			self.image_names.append(img_filename)
 			if(label is None):
-				self.labels.append(int(img_filename.split("/"[-1].split("-")[1])))
+				self.labels.append(int(img_filename.split("/")[-1].split("-")[1]))
 			else:
 				self.labels += [label for j in range(multiplier)]
 
@@ -78,7 +57,7 @@ class ImageDiagnosis:
 
 		# print(os.getcwd())
 		img_dir = './mainpage/dataset/train_dir'
-		self.train_imgs = [glob.glob(img_dir+'/*.jpg')]
+		self.train_imgs = glob.glob(img_dir+'/*.jpg')
 		#image file name format: img_dir/case-diagnosis-name.png
 
 		self.feature_names = {'img': "Image"}
@@ -92,7 +71,7 @@ class ImageDiagnosis:
 			self.feature_value_names[f] = ""
 		"""
 		test_dir = './mainpage/dataset/test_dir'
-		self.test_imgs = [glob.glob(test_dir+'/*.jpg')]
+		self.test_imgs = glob.glob(test_dir+'/*.jpg')
 
 		self.cases = [0,1]
 
@@ -146,15 +125,27 @@ class ModelMLModel(models.Model):
 				varInput = input.view(-1, c, h, w)
 			
 				out = model(varInput)
-				pred = (out>0.5).float()
-				prediction = pred.item()
-	
-				if(abs(prediction - 1) < 0.001):
-					return prediction, out
-				else:
-					return prediction, 1-out
+				# pred = (out>0.5).float()
+				# prediction = pred.item()
+				_, predicted = torch.max(out.data, 1)
+
+				_, label = torch.max(target.data, 1)
+
+
+				print(out.data.size())
+				print(predicted.data.size())
+				raw_output = out.data[0][-1].item()
+				prediction = predicted.data[-1].item()
+
+				return prediction, raw_output
+
+				# if(abs(prediction - 1) < 0.001):
+				# 	return prediction, out
+				# else:
+				# 	return prediction, 1-out
 
 	def model_inference_case(self, case, batched=0):
+		
 		if(batched == 1):
 			model = pickle.loads(self.batched_model_field)
 		else:
@@ -162,12 +153,13 @@ class ModelMLModel(models.Model):
 		
 		# test = [(img if (('/'+str(case)+'-') in img)) for img in self.domain.test_imgs]
 		test = []
+
 		for img in self.domain.test_imgs:
 			if ('/'+str(case)+'-') in img:
 				test.append(img)
 
 		dataset = ModifiedDataset(test, self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=64, shuffle=False)
+		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False)
 
 		correct = 0
 
@@ -180,7 +172,7 @@ class ModelMLModel(models.Model):
 			
 				out = model(varInput)
 				pred = (out>0.5).float()
-				correct += (pred == target).float().sum()
+				correct += (pred == target).float().sum().item()
 
 		return (correct + 0.0)/ len(test)
 
@@ -211,7 +203,11 @@ class ModelMLModel(models.Model):
 		self.batched_model_field = pickle.dumps(model)
 
 	def initialize(self, calibration, update, model_pickle_file):
-		model = torch.load(model_pickle_file)
+		gpu_model = torch.load(model_pickle_file, map_location=torch.device('cpu'))
+		nClasses = 2
+		model = DenseNet121(nClasses)
+		model = gpu_model.module 
+
 		self.model_field = pickle.dumps(model)
 		# self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))
 		self.batched_model_field = self.model_field
@@ -223,18 +219,22 @@ class ModelMLModel(models.Model):
 		good_calibration_std = 0.03
 		bad_calibration_std = 0.05
 
-		calibration = {} #stores the standard deviation
+		calibration_dict = {} #stores the standard deviation
+		calibration=int(calibration)
 		if(calibration == 1):
 			for case in self.domain.cases:
-				calibration[case] = good_calibration_std
+				calibration_dict[case] = good_calibration_std
 		else: #calibration == 0, not well-calibrated for all
 			for case in self.domain.cases:
-				calibration[case] = bad_calibration_std
+				calibration_dict[case] = bad_calibration_std
+
+		print('cal dict')
+		print(calibration_dict)
 
 		batched_accuracy = copy.deepcopy(accuracy)
 		
 		self.update_type_field = update
-		self.calibration_field = json.dumps(calibration)
+		self.calibration_field = json.dumps(calibration_dict)
 
 		self.accuracy_field = json.dumps(accuracy)
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
@@ -278,8 +278,8 @@ class ModelMLModel(models.Model):
 		calibration = json.loads(self.calibration_field)
 
 		prediction, model_conf = self.model_inference(img_filename, batched=0)
-		
-		confidence = list(np.random.normal(model_conf, calibration[case], 1))[0]
+
+		confidence = list(np.random.normal(model_conf, calibration[str(case)], 1))[0]
 		confidence = min(max(confidence, 0.5000),1.0)
 		return [prediction, confidence, gt]
 
@@ -307,6 +307,7 @@ class ModelExperiment(models.Model):
 
 	def generate_patient(self):
 		generated_patient = random.sample(self.domain.train_imgs,1)[0]
+		print('patient',generated_patient)
 		return generated_patient
 
 class ModelUserResponse(models.Model):
