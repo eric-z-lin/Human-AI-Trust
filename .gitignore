@@ -2,4 +2,8 @@
 human_ai_trust/mainpage/migrations/
 *.zip
 *CheXpert-v1.0-small*
+human_ai_trust/mainpage/dataset
 human_ai_trust/mainpage/dl_models/
+human_ai_trust/for_experiment_edema_only.csv
+human_ai_trust/mainpage/.DS_Store
+human_ai_trust/.DS_Store

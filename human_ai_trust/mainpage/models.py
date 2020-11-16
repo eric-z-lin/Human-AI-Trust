@@ -3,177 +3,248 @@ import json
 import random
 import copy
 import numpy as np
+from PIL import Image
+import glob
+import pickle
 
-class Disease:
-	def __init__(self):
-		self.feature_names = {'cough': "Cough", 'chills': "Chills", 'flu_test':"Result of Patient Flu Test", 
-								'body_temp':"Body Temperature", 'weight':"Weight"}
-		self.features = ['cough', 'chills', 'flu_test', 'body_temp', 'weight']
-		self.feature_values = {'cough': [0,1], 'chills': [0,1], 'flu_test': [0,1], 
-							   'body_temp': ['Low', 'Norm', 'High'], 'weight': ['Low', 'Med', 'High']}
-		self.feature_value_names = {'cough-0':"No", 'cough-1':"Yes",
-									'chills-0':"No", 'chills-1':"Yes",
-									'flu_test-0':"Negative", 'flu_test-1':"Positive",
-									'body_temp-Low':"Low",'body_temp-Norm':"Norm",'body_temp-High':"High",
-									'weight-Low':"Low",'weight-Med':"Med",'weight-High':"High"}
-		self.cases = [str(self.feature_values['cough'][(i//36)%2]) + "-" + 
-					   str(self.feature_values['chills'][(i//18)%2]) + "-" + 
-					   str(self.feature_values['flu_test'][(i//9)%2]) + "-" + 
-					   self.feature_values['body_temp'][(i//3)%3] + "-" +
-					   self.feature_values['weight'][(i)%3] for i in range(2*2*2*3*3)]
+import torch
+import torch.nn as nn
+from torch.utils.data import Dataset
+import torchvision.transforms as transforms
 
-	def ground_truth(self, case):
-		case_arr = case.split("-")
-		print('case',case_arr)
+#from update_model import *
+
+class ModifiedDataset(Dataset):
+	def __init__(self, imgs, transform=None):
+		#image file name format: img_dir/case-diagnosis-name.png
+		self.image_names = imgs
+		self.labels = []
+		self.transform = transform
+
+		for file in self.image_names:
+			self.labels.append(int(file.split("/"[-1].split("-")[1])))
+
+	def __getitem__(self, index):
+		"""Take the index of item and returns the image and its labels"""
 		
-		if(case_arr[2] == '1'):
-			return 0
-		elif(case_arr[3] == 'High' and case_arr[0] == '1'):
-			return 1
-		elif(case_arr[3] == 'Norm' and case_arr[1] == '1'):
-			return 1
-		else:
-			return 0
+		image_name = self.image_names[index]
+		image = Image.open(image_name).convert('RGB')
+		label = self.labels[index]
+		if self.transform is not None:
+			image = self.transform(image)
+		return image, torch.FloatTensor(label)
 
-# Create your models here.
+	def add_data(self, img_filename, label = None, multiplier=1):
+		for i in range(multiplier):
+			self.image_names.append(img_filename)
+			if(label is None):
+				self.labels.append(int(img_filename.split("/"[-1].split("-")[1])))
+			else:
+				self.labels += [label for j in range(multiplier)]
+
+	def __len__(self):
+		return len(self.image_names)
+
+class ImageDiagnosis:
+	def __init__(self, train_dir, test_dir):
+
+		self.train_imgs = [filename in glob.glob(img_dir+'/*.jpg')]
+		#image file name format: img_dir/case-diagnosis-name.png
+
+		self.feature_names = {'img': "Image"}
+		self.features = ['img']
+		self.feature_values = {'img': img_filenames}
+		self.feature_value_names = {}
+		for f in img_filenames:
+			self.feature_value_names[f] = ""
+
+		self.test_imgs = [filename in glob.glob(test_dir+'/*.jpg')]
+
+		self.cases = [0,1]
+
+		normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+		transformList = []
+		#transformList.append(transforms.Resize(imgtransCrop))
+		transformList.append(transforms.RandomResizedCrop(imgtransCrop))
+		transformList.append(transforms.RandomHorizontalFlip())
+		transformList.append(transforms.ToTensor())
+		transformList.append(normalize)      
+		transformSequence=transforms.Compose(transformList)
+
+		self.transformSequence = transformSequence
+
+	def ground_truth(self, img_filename):
+		img_name = img_filename.split("/")[-1]
+		case = int(img_name.split("-")[0])
+		gt = int(img_name.split("-")[1])
+		return (gt, case)
+
 class ModelMLModel(models.Model):
-	domain = Disease()
-
-	# Fields
+	domain = ImageDiagnosis("dataset/train_dir", "dataset/test_dir")
 	accuracy_field = models.TextField(blank=True, null=True, default='{}')
+	model_field = models.BinaryField()
 	calibration_field = models.TextField(blank=True, null=True, default='{}')
 	update_type_field = models.IntegerField()
 	batched_accuracy_field = models.TextField(blank=True, null=True, default='{}')
+	batched_model_field = models.BinaryField()
 
 	# Metadata
 	class Meta: 
 		ordering = ['-accuracy_field', '-calibration_field', '-update_type_field', '-batched_accuracy_field']
 
-	# Methods
-	def initialize(self, performance, calibration, update):
-		good_calibration_std = 0.02
-		bad_calibration_std = 0.035
+	def model_inference(self, img_filename, batched=0):
+		if(batched == 1):
+			model = pickle.loads(self.batched_model_field)
+		else:
+			model = pickle.loads(self.model_field)
 
-		accuracy = {}
-		if (performance == 1): #good model
-			for case in self.domain.cases:
-				accuracy[case] = 0.85
-		else: #performance == 0, poor model
-			for case in self.domain.cases:
-				accuracy[case] = 0.70
+		dataset = ModifiedDataset([img_filename], self.domain.transformSequence)
+		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False)
+
+		prediction = -1
+
+		model.eval()
+		with torch.no_grad():
+			for i, (input, target) in enumerate(dataLoader):
+				bs, c, h, w = input.size()
+				varInput = input.view(-1, c, h, w)
+			
+				out = model(varInput)
+				pred = (out>0.5).float()
+				prediction = pred.item()
+	
+				if(abs(prediction - 1) < 0.001):
+					return prediction, out
+				else:
+					return prediction, 1-out
+
+	def model_inference_case(self, case, batched=0):
+		if(batched == 1):
+			model = pickle.loads(self.batched_model_field)
+		else:
+			model = pickle.loads(self.model_field)
 		
+		test = [img if '/'+str(case)+'-' in img for img in self.domain.test_imgs]
+
+		dataset = ModifiedDataset(test, self.domain.transformSequence)
+		dataLoader = DataLoader(dataset=dataset, batch_size=64, shuffle=False)
+
+		correct = 0
+
+		with torch.no_grad():
+			for i, (input, target) in enumerate(dataLoader):
+				target = target#.cuda()
+
+				bs, c, h, w = input.size()
+				varInput = input.view(-1, c, h, w)
+			
+				out = model(varInput)
+				pred = (out>0.5).float()
+				correct += (pred == target).float().sum()
+
+		return (correct + 0.0)/ len(test)
+
+	def model_finetune(self, dataset, epochs=1):
+		model = pickle.loads(self.batched_model_field)
+
+		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True)
+
+		model.train()
+		optimizer = optim.Adam (model.parameters(), lr=0.00001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
+		loss = torch.nn.BCELoss(size_average = True)
+
+		for e in range(epochs):
+			for batchID, (varInput, target) in enumerate(dataLoaderTrain):
+				varTarget = target#.cuda(non_blocking = True)
+				varOutput = model(varInput)
+				lossvalue = loss(varOutput, varTarget)
+				
+				optimizer.zero_grad()
+				lossvalue.backward()
+				optimizer.step()
+
+		self.batched_model_field = pickle.dumps(model)
+
+	def initialize(self, calibration, update, model_pickle_file):
+		self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))
+		self.batched_model_field = self.model_field
+
+		accuracy = {} #stores the accuracy for case 0 and case 1
+		for case in self.domain.cases:
+			accuracy[case] = self.model_inference_case(case,batched=0)
+
+		good_calibration_std = 0.03
+		bad_calibration_std = 0.05
+
 		calibration = {} #stores the standard deviation
-		if (calibration == 2): #well-calibrated for all
+		if(calibration == 1):
 			for case in self.domain.cases:
 				calibration[case] = good_calibration_std
-		elif (calibration == 1): #well-calibrated for 2 random features
-			high_cal_features = random.sample(self.domain.features[:-1], 2) #choose 2 of the 4 important features
-			high_cal_features_vals = [random.sample(self.domain.feature_values[feat], 1) for feat in high_cal_features]
-			for case in self.domain.cases:
-				case_arr = case.split("-")
-				if (case_arr[self.domain.features.index(high_cal_features[0])] == high_cal_features_vals[0] or
-					case_arr[self.domain.features.index(high_cal_features[1])] == high_cal_features_vals[1]):
-					calibration[case] = good_calibration_std
-				else:
-					calibration[case] = bad_calibration_std
 		else: #calibration == 0, not well-calibrated for all
 			for case in self.domain.cases:
 				calibration[case] = bad_calibration_std
-		
+
 		batched_accuracy = copy.deepcopy(accuracy)
 		
 		self.update_type_field = update
-		self.accuracy_field = json.dumps(accuracy)
 		self.calibration_field = json.dumps(calibration)
+
+		self.accuracy_field = json.dumps(accuracy)
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
-	
+
 	def batch_update(self):
-		self.accuracy_field = self.batched_accuracy_field   
+		self.accuracy_field = self.batched_accuracy_field
+		self.model_field = self.batched_model_field
 
-	def model_update(self, case, user_prediction, gt):
+	def model_update(self, img_filename, model_prediction, user_prediction, gt):
 		batched_accuracy = json.loads(self.batched_accuracy_field)
-		case_arr = case.split("-")
+		calibration = json.loads(self.calibration_field)
 
-		if(user_prediction != gt): #user was incorrect, model becomes slightly worse
-			#update the partiular example
-			batched_accuracy[case] = batched_accuracy[case]*0.92
-			#update related classes
-			related = random.sample(self.domain.features, 2)
-			for case2 in self.domain.cases:
-				case2_arr = case2.split("-")
-				if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
-					case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
-					batched_accuracy[case2] = batched_accuracy[case2]*0.95
-		else: #user was correct, model becomes slightly better
-			#update the particular example
-			batched_accuracy[case] = 1.0
-			#update related classes
-			related = random.sample(self.domain.features, 3)
-			for case2 in self.domain.cases:
-				case2_arr = case2.split("-")
-				if (case_arr[self.domain.features.index(related[0])] == case2_arr[self.domain.features.index(related[0])] or
-					case_arr[self.domain.features.index(related[1])] == case2_arr[self.domain.features.index(related[1])]):
-					batched_accuracy[case2] += (1-batched_accuracy[case2])*0.3
-		
+		case = int(img_filename.split("/")[-1].split("-")[0])
+		transform = self.domain.transformSequence
+
+		if(model_prediction != user_prediction): #user and model disagreed, accuracy update
+			dataset = ModifiedDataset(domain.train_imgs, transform)
+			dataset.add_data(img_filename, user_prediction, multiplier=5)
+
+			self.model_finetune(dataset, epochs=3)
+			for case in self.domain.cases: #update the accuracy
+				batched_accuracy[case] = self.model_inference_case(case, batched=1)
+
+		else: #user and model agreed, calibration update
+			if(user_prediction != gt): #user and model were incorrect, calibration decreases
+				calibration[case] = min(calibration[case]*1.05, 0.1)
+			else: #user and model were correct, calibration increases
+				calibration[case] = min(calibration[case]*0.9, 0.1)
+
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
+		self.calibration_field = json.dumps(calibration)
 
-		if (self.update_type_field == 1): #immediate updates
+		if(self.update_type_field == 1 or self.update_type_field == 3):
 			self.batch_update()
 
-	def model_prediction(self, case):
-		gt = domain.ground_truth(case)
+	def model_prediction(self, img_filename):
+		gt,case = self.domain.ground_truth(img_filename)
 
 		accuracy = json.loads(self.accuracy_field)
 		calibration = json.loads(self.calibration_field)
 
-		if (random.random() <= accuracy[case]):
-			prediction = gt
-		else:
-			prediction = abs(1-gt)
+		prediction, model_conf = self.model_inference(img_filename, batched=0)
 		
-		confidence = list(np.random.normal(accuracy[case], calibration[case], 1))[0]
+		confidence = list(np.random.normal(model_conf, calibration[case], 1))[0]
 		confidence = min(max(confidence, 0.5000),1.0)
 		return [prediction, confidence, gt]
 
-	# def generated_patient_to_case(self, generated_patient):
-	#     case = ""
-	#     for feat in range(len(self.domain.features)):
-	#         case = case + generated_patient[self.domain.features[feat]] + "-"
-	#     return case[:-1]
-
-	# def generate_patient(self):
-	# 	patient = random.sample(self.domain.cases, 1)[0]
-	# 	patient_arr = patient.split("-")
-
-	# 	generated_patient = {} #features to value mapping
-	# 	for feat in range(len(self.domain.features)):
-	#         generated_patient[self.domain.features[feat]] = patient_arr[feat]
-	# 	return generated_patient
-
-"""
-		accuracy = json.loads(self.accuracy_field)
-		calibration = json.loads(self.calibration_field)
-		batched_accuracy = json.loads(self.batched_accuracy_field)
-
-		self.accuracy_field = json.dumps(accuracy)
-		self.calibration_field = json.dumps(calibration)
-		self.batched_accuracy_field = json.dumps(batched_accuracy)
-"""
-
-
 class ModelExperiment(models.Model):
 	"""A typical class defining a model, derived from the Model class."""
-
 
 	# linking fields
 
 	# Fields
 	# 0 or 1
-	field_ml_model_accuracy = models.IntegerField(help_text="0: Low accuracy, 1: high accuracy")
-	# 0 or 1
 	field_ml_model_calibration = models.IntegerField(help_text="0: Poor calibration, 1: Good calibration")
-	# 0, 1, or 2
-	field_ml_model_update_type = models.IntegerField(help_text="0: Control/no update, 1: instant update, 2: batched update")
+	# 0, 1, 2, or 3
+	field_ml_model_update_type = models.IntegerField(help_text="0: Control/no update, 1: instant update, 2: batched update, 3: active learning")
 
 	field_user_name = models.CharField(max_length=40, blank=True, help_text='User name')
 
@@ -184,41 +255,11 @@ class ModelExperiment(models.Model):
 
 	field_score = models.IntegerField(help_text="Current experiment score", default=0)
 
-
-	domain = Disease()
-
-	def generated_patient_to_case(self, generated_patient):
-		case = ""
-		for feat in range(len(self.domain.features)):
-			case = case + generated_patient[self.domain.features[feat]] + "-"
-		return case[:-1]
+	domain = ImageDiagnosis()
 
 	def generate_patient(self):
-		rand = random.random()
-		gt = 0
-		if(rand > 0.5):
-			gt = 1
-
-		patient = random.sample(self.domain.cases, 1)[0]
-
-		while(domain.ground_truth(patient) != gt):
-			patient = random.sample(self.domain.cases, 1)[0]
-
-		patient_arr = patient.split("-")
-		self.field_patient_number += 1
-		generated_patient = {} #features to value mapping
-		for feat in range(len(self.domain.features)):
-			generated_patient[self.domain.features[feat]] = patient_arr[feat]
+		generated_patient = random.sample(self.domain.train_imgs,1)[0]
 		return generated_patient
-
-
-
-
-
-
-
-
-
 
 class ModelUserResponse(models.Model):
 	"""A typical class defining a model, derived from the Model class."""
