@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import glob
 import pickle
+import os
 
 import torch
 import torch.nn as nn
@@ -48,17 +49,21 @@ class ModifiedDataset(Dataset):
 class ImageDiagnosis:
 	def __init__(self, train_dir, test_dir):
 
-		self.train_imgs = [filename in glob.glob(img_dir+'/*.jpg')]
+		# print(os.getcwd())
+		img_dir = './mainpage/dataset/train_dir'
+		self.train_imgs = [glob.glob(img_dir+'/*.jpg')]
 		#image file name format: img_dir/case-diagnosis-name.png
 
 		self.feature_names = {'img': "Image"}
 		self.features = ['img']
-		self.feature_values = {'img': img_filenames}
+		# self.feature_values = {'img': img_filenames} ?????
+		self.feature_values = {'img': self.train_imgs}
 		self.feature_value_names = {}
-		for f in img_filenames:
+		for f in self.train_imgs:
 			self.feature_value_names[f] = ""
 
-		self.test_imgs = [filename in glob.glob(test_dir+'/*.jpg')]
+		test_dir = './mainpage/dataset/test_dir'
+		self.test_imgs = [glob.glob(test_dir+'/*.jpg')]
 
 		self.cases = [0,1]
 
@@ -124,7 +129,11 @@ class ModelMLModel(models.Model):
 		else:
 			model = pickle.loads(self.model_field)
 		
-		test = [img if '/'+str(case)+'-' in img for img in self.domain.test_imgs]
+		# test = [(img if (('/'+str(case)+'-') in img)) for img in self.domain.test_imgs]
+		test = []
+		for img in self.domain.test_imgs:
+			if ('/'+str(case)+'-') in img:
+				test.append(img)
 
 		dataset = ModifiedDataset(test, self.domain.transformSequence)
 		dataLoader = DataLoader(dataset=dataset, batch_size=64, shuffle=False)
@@ -292,7 +301,7 @@ class ModelUserResponse(models.Model):
 		(4, "Agree"),
 		(5, "Strongly agree"),
 	)
-	field_user_accuracy = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+	field_user_perceived_accuracy = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of perceived accuracy')
 	field_user_calibration = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence calibration')
