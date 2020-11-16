@@ -203,15 +203,15 @@ class ModelMLModel(models.Model):
 		case = int(img_filename.split("/")[-1].split("-")[0])
 		transform = self.domain.transformSequence
 
-		if(model_prediction != user_prediction): #user and model disagreed, accuracy update
-			dataset = ModifiedDataset(domain.train_imgs, transform)
-			dataset.add_data(img_filename, user_prediction, multiplier=5)
+		#if(model_prediction != user_prediction): #user and model disagreed, accuracy update
+		dataset = ModifiedDataset(domain.train_imgs, transform)
+		dataset.add_data(img_filename, user_prediction, multiplier=5)
 
-			self.model_finetune(dataset, epochs=3)
-			for case in self.domain.cases: #update the accuracy
-				batched_accuracy[case] = self.model_inference_case(case, batched=1)
+		self.model_finetune(dataset, epochs=3)
+		for case in self.domain.cases: #update the accuracy
+			batched_accuracy[case] = self.model_inference_case(case, batched=1)
 
-		else: #user and model agreed, calibration update
+		if(model_prediction == user_prediction): #user and model agreed, calibration update as well
 			if(user_prediction != gt): #user and model were incorrect, calibration decreases
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
