@@ -58,15 +58,19 @@ class ImageDiagnosis:
 		self.features = ['img']
 		# self.feature_values = {'img': img_filenames} ?????
 		self.feature_values = {'img': self.train_imgs}
+		"""
 		self.feature_value_names = {}
 		for f in self.train_imgs:
+			print(f)
 			self.feature_value_names[f] = ""
-
+		"""
 		test_dir = './mainpage/dataset/test_dir'
 		self.test_imgs = [glob.glob(test_dir+'/*.jpg')]
 
 		self.cases = [0,1]
 
+		imgtransResize = (320, 320)
+		imgtransCrop = 224
 		normalize = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 		transformList = []
 		#transformList.append(transforms.Resize(imgtransCrop))
@@ -265,7 +269,7 @@ class ModelExperiment(models.Model):
 
 	field_score = models.IntegerField(help_text="Current experiment score", default=0)
 
-	domain = ImageDiagnosis()
+	domain = ImageDiagnosis("dataset/train_dir", "dataset/test_dir")
 
 	def generate_patient(self):
 		generated_patient = random.sample(self.domain.train_imgs,1)[0]
