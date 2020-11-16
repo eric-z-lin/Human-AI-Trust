@@ -211,7 +211,7 @@ class ModelMLModel(models.Model):
 			mult = 2
 		else: #(model_prediction != user_prediction): #user and model disagreed, accuracy update
 			mult = 5
-		dataset = ModifiedDataset(domain.train_imgs, transform)
+		dataset = ModifiedDataset(self.domain.train_imgs, transform)
 		dataset.add_data(img_filename, user_prediction, multiplier=mult)
 
 		self.model_finetune(dataset, epochs=3)
