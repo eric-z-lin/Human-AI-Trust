@@ -4,11 +4,12 @@ import cv2 as cv
 import numpy as np
 import csv
 
-result = [y for x in os.walk("CheXpert-v1.0-small/") for y in glob(os.path.join(x[0], '*.jpg'))]
+result = [y for x in os.walk("CheXpert-v1.0-small/train/") for y in glob(os.path.join(x[0], '*.jpg'))]
 
 file_to_diagnosis = {}
 
-with open('for_experiment_edema_only.csv') as csvfile:
+#with open('for_experiment_edema_only.csv') as csvfile:
+with open ('stat_val_edema_only.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     for row in readCSV:
     	if("Path" not in row[0]):
@@ -24,8 +25,8 @@ for counter in range(len(result)):
 
 	#if(counter < 0.7*len(result)):
 	image = cv.imread(file)
-	cv.imwrite("mainpage/dataset/train_dir/"+"0-"+name, image)
+	cv.imwrite("mainpage/dataset/test_dir/"+"0-"+name, image)
 	#else:
 	image = cv.imread(file)
 	new_image = cv.convertScaleAbs(image, alpha=1.0, beta=80)
-	cv.imwrite("mainpage/dataset/train_dir/"+"1-"+name, new_image)
+	cv.imwrite("mainpage/dataset/test_dir/"+"1-"+name, new_image)
