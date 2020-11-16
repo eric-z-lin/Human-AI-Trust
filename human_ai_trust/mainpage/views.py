@@ -195,7 +195,7 @@ def start_experiment(request):
 class IntervalForm(forms.Form):
 	field_relationship = forms.ChoiceField(
 		label = "How would you describe your relationship with the AI?",
-		choices = ModelUserResponse.USER_RELATIONSHIP_REPONSES,
+		choices = ModelUserResponse.USER_RELATIONSHIP_RESPONSES,
 		widget = forms.RadioSelect
 	)
 	field_perceived_accuracy = forms.ChoiceField(
@@ -223,7 +223,7 @@ class IntervalForm(forms.Form):
 class ConstantForm(forms.Form):
 	field_relationship = forms.ChoiceField(
 		label = "How would you describe your relationship with the AI?",
-		choices = ModelUserResponse.USER_RELATIONSHIP_REPONSES,
+		choices = ModelUserResponse.USER_RELATIONSHIP_RESPONSES,
 		widget = forms.RadioSelect
 	)
 	
