@@ -10,6 +10,7 @@ import os
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 # from mainpage.torchhelper import DenseNet121
@@ -253,6 +254,7 @@ class ModelMLModel(models.Model):
 		transform = self.domain.transformSequence
 
 		if(model_prediction == user_prediction): #user and model agreed, calibration update as well
+			case = str(case)
 			if(user_prediction != gt): #user and model were incorrect, calibration decreases
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
@@ -324,12 +326,11 @@ class ModelUserResponse(models.Model):
 
 	# At every time step
 	USER_RELATIONSHIP_RESPONSES = (
-		(1,'I only use the AI\'s prediction.'),
-		(2, ''),
-		(3, 'I use the AI\'s prediction and my own knowledge equally.'),
-		(4, ''),
-		(5, 'I only use my own knowledge.')
-
+		(1, '1. I only use my own knowledge.'),
+		(2, '2.'),
+		(3, '3. I use the AI\'s prediction and my own knowledge equally.'),
+		(4, '4.'),
+		(5,'5. I only use the AI\'s prediction.'),
 	)
 	field_user_relationship = models.IntegerField(null=True, choices=USER_RELATIONSHIP_RESPONSES, blank=True, 
 				default=3, help_text='Measure of user relationship with model')

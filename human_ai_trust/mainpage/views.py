@@ -30,6 +30,8 @@ def index(request):
 		# case = experiment.generated_patient_to_case(generated_patient)
 
 		# Need to save here since generate_patient() updates the field_patient_number
+		# (not anymore)
+		experiment.field_patient_number += 1
 		experiment.save()
 		
 		arr = ml_model.model_prediction(generated_patient)
@@ -85,9 +87,10 @@ def index(request):
 		trustForm = IntervalForm()
 		updateForm = ConstantForm()
 
-		correctForm = IntervalForm()
+		correctForm = ConstantForm()
 		if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
-			correctForm = ConstantForm()
+			print('intervalform')
+			correctForm = IntervalForm()
 
 		patient_img = '/static/' + generated_patient
 
