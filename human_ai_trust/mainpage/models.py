@@ -45,10 +45,13 @@ class ModifiedDataset(Dataset):
 	def add_data(self, img_filename, label = None, multiplier=1):
 		for i in range(multiplier):
 			self.image_names.append(img_filename)
+			l = [0, 0] # one for each class 
 			if(label is None):
-				self.labels.append(int(img_filename.split("/")[-1].split("-")[1]))
+				l[int(img_filename.split("/")[-1].split("-")[1])] = 1
 			else:
-				self.labels += [label for j in range(multiplier)]
+				l[label] = 1
+			self.labels.append(l)
+		assert(len(self.image_names) == len(self.labels))
 
 	def __len__(self):
 		return len(self.image_names)
@@ -132,11 +135,12 @@ class ModelMLModel(models.Model):
 
 				_, label = torch.max(target.data, 1)
 
+				print("output of model", out.data)
 
-				print(out.data.size())
-				print(predicted.data.size())
-				raw_output = out.data[0][-1].item()
 				prediction = predicted.data[-1].item()
+				raw_output = out.data[-1][prediction].item()
+
+				print("model prediction: ", prediction, ", confidence: ", raw_output)
 
 				return prediction, raw_output
 
@@ -265,6 +269,9 @@ class ModelMLModel(models.Model):
 		dataset = ModifiedDataset(self.domain.train_imgs, transform)
 		dataset.add_data(img_filename, user_prediction, multiplier=mult)
 
+		#print("dataset,", dataset.image_names)
+		#print("dataset labels,", dataset.labels)
+
 		self.model_finetune(dataset, epochs=3)
 		for case in self.domain.cases: #update the accuracy
 			batched_accuracy[case] = self.model_inference_case(case, batched=1)
@@ -309,8 +316,48 @@ class ModelExperiment(models.Model):
 
 	domain = ImageDiagnosis("dataset/train_dir", "dataset/test_dir")
 
+	field_patient_ordering = models.TextField(blank=True, null=True, default='{}')
+
+	def set_ordering(self):
+		num_trials = 50
+		num_buckets = 5
+		splits = [[1,0],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0,1]]
+		patients_per_bucket = num_trials / num_buckets
+
+		#image file name format: img_dir/case-diagnosis-name.png
+		normal = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 0)]
+		overexposed = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 1)]
+
+		ordering = []
+
+		for i in range(num_buckets):
+			norm_patients = round(splits[i][0]*patients_per_bucket)
+			over_patients = max(round(patients_per_bucket - norm_patients), 0)
+
+			l = []
+			for p in range(norm_patients):
+				random_index = np.random.randint(0, len(normal))
+				l.append(normal.pop(random_index))
+			
+			for p in range(over_patients):
+				random_index = np.random.randint(0, len(overexposed))
+				l.append(overexposed.pop(random_index))
+
+			random.shuffle(l)
+			ordering.extend(l)
+
+		final_order = {}
+		for i in range(len(ordering)):
+			final_order[i] = ordering[i]
+
+		#print(final_order)
+		assert(len(ordering) == num_trials)
+
+		self.field_patient_ordering = json.dumps(final_order)
+
 	def generate_patient(self):
-		generated_patient = random.sample(self.domain.train_imgs,1)[0]
+		final_order = json.loads(self.field_patient_ordering)
+		generated_patient = final_order[str(self.field_patient_number)]
 		print('patient',generated_patient)
 		return generated_patient
 

@@ -160,6 +160,8 @@ def start_experiment(request):
 			new_experiment.field_ml_model_update_type = form.cleaned_data['field_ml_model_update_type']
 			new_experiment.field_user_name = form.cleaned_data['user_name']
 
+			new_experiment.set_ordering()
+
 			print('form params')
 			# print(new_experiment.field_ml_model_accuracy)
 			print(new_experiment.field_ml_model_calibration)
@@ -311,11 +313,12 @@ def patient_result(request):
 	# Check which button got pressed
 	if request.POST.get("agree"):
 		print('reached AGREE')
-
+		user_response.field_user_prediction = ml_prediction
 
 	# Check which button got pressed
 	if request.POST.get("disagree-no-update"):
 		# Create a form instance with the submitted data
+		user_response.field_user_prediction = 1-ml_prediction
 		print('reached disagree-no-update')
 
 
@@ -323,6 +326,7 @@ def patient_result(request):
 		# Check which button got pressed
 	if request.POST.get("disagree-update"):
 		# Create a form instance with the submitted data
+		user_response.field_user_prediction = 1-ml_prediction
 		print('reached disagree-UPDATE')
 		# Validate the form
 		print('checking validity')
@@ -333,7 +337,7 @@ def patient_result(request):
 			ml_model.model_update(
 				img_filename = user_response.field_data_point_string,
 				model_prediction = ml_prediction, 
-				user_prediction = user_response.field_user_prediction, 
+				user_prediction = 1-ml_prediction,#user_response.field_user_prediction, 
 				gt = user_response.field_instance_ground_truth
 			)
 
@@ -369,8 +373,6 @@ def patient_result(request):
 	user_response.save()
 	ml_model.save()
 	experiment.save()
-
-
 
 	# Write user response to a csv
 	write_to_csv(user_response)
