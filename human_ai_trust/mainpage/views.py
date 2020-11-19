@@ -89,6 +89,8 @@ def index(request):
 		if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
 			correctForm = ConstantForm()
 
+		patient_img = '/static/' + generated_patient
+
 
 		context = {
 		    # 'feature_dict': feature_dict,
@@ -105,7 +107,7 @@ def index(request):
 		    'percent_diagnosed': round(experiment.field_patient_number * 100 / MAX_TRIALS),
 		    'name':experiment.field_user_name,
 		    'ground_truth': new_user_response.field_instance_ground_truth,
-		    'patient_img': "." + generated_patient
+		    'patient_img': patient_img.replace('./mainpage/', '')
 		}
 
 		# Render the HTML template index.html with the data in the context variable
