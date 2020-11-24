@@ -45,7 +45,7 @@ def index(request):
 		# for feat in domain.features:
 		# 	feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
 
-		print('hi', generated_patient)
+		print('hi2', generated_patient)
 
 		initUserResponse = {
 			"field_data_point_string": generated_patient,
@@ -92,7 +92,8 @@ def index(request):
 			print('intervalform')
 			correctForm = IntervalForm()
 
-		patient_img = '/static/' + generated_patient
+		patient_img = '/static/' + generated_patient.replace('./mainpage/', '')
+		print('index_img', patient_img)
 
 
 		context = {
@@ -110,7 +111,7 @@ def index(request):
 		    'percent_diagnosed': round(experiment.field_patient_number * 100 / MAX_TRIALS),
 		    'name':experiment.field_user_name,
 		    'ground_truth': new_user_response.field_instance_ground_truth,
-		    'patient_img': patient_img.replace('./mainpage/', '')
+		    'patient_img': patient_img
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -380,9 +381,12 @@ def patient_result(request):
 	# Render patient result page
 	print('hi', user_response.field_data_point_string)
 
+	patient_img = '/static/' + user_response.field_data_point_string.replace('./mainpage/', '')
+	print('patient_img_result', patient_img)
+
 	context = {
 		# 'feature_display_dict': feature_display_dict,
-		'patient_img': user_response.field_data_point_string,
+		'patient_img': '/static/' + user_response.field_data_point_string.replace('./mainpage/', ''),
 		'ml_prediction': 'Positive' if (ml_prediction == 1) else 'Negative',
 		'user_prediction': 'Positive' if (user_response.field_user_prediction == 1) else 'Negative',
 		'ground_truth': 'Positive' if (user_response.field_instance_ground_truth == 1) else 'Negative',
