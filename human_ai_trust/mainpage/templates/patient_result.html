@@ -13,17 +13,19 @@
         </div>
 
         <!-- CONTENT -->
-        <div class="row" style="height: 35vh; background: {{result_color}}; padding: 20; border-radius: 10px;">
+        <div class="row" style="height: 60vh; background: {{result_color}}; padding: 20; border-radius: 10px;">
 
           <div class="col-6">
             <br>
             <br>
-            <h2>Patient Profile</h2>
-            <ul>
-              {% for key, value in feature_display_dict.items %}
-                <li><b>{{key}}</b>: {{value}}</li>
-              {% endfor %}
-            </ul>
+            <h2>Patient X-Ray</h2>
+                <!-- <ul>
+                  {% for key, value in feature_display_dict.items %}
+                    <li><b>{{key}}</b>: {{value}}</li>
+                  {% endfor %}
+                </ul> -->
+            <img src="{{patient_img}}">
+            
           </div>
         
           <div class="col-6">
