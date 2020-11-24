@@ -45,7 +45,6 @@ def index(request):
 		# for feat in domain.features:
 		# 	feature_display_dict[domain.feature_names[feat]] = domain.feature_value_names[feat + "-" + generated_patient[feat]]
 
-		print('hi2', generated_patient)
 
 		initUserResponse = {
 			"field_data_point_string": generated_patient,
@@ -93,7 +92,6 @@ def index(request):
 			correctForm = IntervalForm()
 
 		patient_img = '/static/' + generated_patient.replace('./mainpage/', '')
-		print('index_img', patient_img)
 
 
 		context = {
@@ -312,9 +310,21 @@ def patient_result(request):
 
 
 	# Check which button got pressed
-	if request.POST.get("agree"):
-		print('reached AGREE')
+	if request.POST.get("agree-no-update"):
+		print('reached AGREE-no-update')
 		user_response.field_user_prediction = ml_prediction
+
+	# Check which button got pressed
+	if request.POST.get("agree-update"):
+		print('reached AGREE-update')
+		user_response.field_user_prediction = ml_prediction
+		if form.is_valid():
+			ml_model.model_update(
+				img_filename = user_response.field_data_point_string,
+				model_prediction = ml_prediction, 
+				user_prediction = ml_prediction,#user_response.field_user_prediction, 
+				gt = user_response.field_instance_ground_truth
+			)
 
 	# Check which button got pressed
 	if request.POST.get("disagree-no-update"):
