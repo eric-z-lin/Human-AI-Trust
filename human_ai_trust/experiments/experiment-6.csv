@@ -1,0 +1,4 @@
+patient_num,patient_filename,accuracy,calibration,model_prediction,ground_truth,user_prediction,user_update,question_relationship,question_perceived_accuracy,question_calibration,question_personal_conf,question_model_conf
+1,./mainpage/dataset/train_dir/0-1-patient20425_study2_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,0,,5,3,3,3,3
+2,./mainpage/dataset/train_dir/0-1-patient03839_study1_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,0,,5,3,3,3,3
+3,./mainpage/dataset/train_dir/0-1-patient32584_study3_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,0,,5,3,3,3,3

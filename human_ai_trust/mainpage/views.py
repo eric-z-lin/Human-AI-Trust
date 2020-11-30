@@ -7,6 +7,9 @@ from mainpage.models import *
 
 from django.http import HttpResponse, HttpResponseRedirect
 import csv
+import pandas as pd
+import os.path
+from os import path
 
 
 CONST_BATCH_UPDATE_FREQUENCY = 2
@@ -125,13 +128,14 @@ class InitExperimentForm(forms.Form):
 	# )
 	# field_ml_model_accuracy = forms.ChoiceField(choices = ACCURACY_CHOICES)
 
+	#0: Poor calibration, 1: Good calibration, 2: No confidence displayed
 	CALIBRATION_CHOICES =( 
 		(0, "Pizza"),
 		(1, "Bagel"),
 		(2, "Pho")
 	)
 	field_ml_model_calibration = forms.ChoiceField(choices = CALIBRATION_CHOICES)
-
+	#0: Control/no update, 1: instant update, 2: batched update, 3: active learning
 	UPDATE_TYPE_CHOICES =( 
 		(0, "Rome"),
 		(1, "Geneva"),
@@ -282,9 +286,12 @@ def patient_result(request):
 	print(request.POST.get("disagree-no-update"))
 	print(request.POST.get("disagree-update"))
 
+	full_questions = 0
+
 	# Create a form instance with the submitted data
 	form = ConstantForm(request.POST)
 	if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
+		full_questions = 1
 		form = IntervalForm(request.POST)  # 2
 		# Validate the form
 		print('checking validity')
@@ -313,11 +320,13 @@ def patient_result(request):
 	if request.POST.get("agree-no-update"):
 		print('reached AGREE-no-update')
 		user_response.field_user_prediction = ml_prediction
+		user_response.field_user_did_update = 0
 
 	# Check which button got pressed
 	if request.POST.get("agree-update"):
 		print('reached AGREE-update')
 		user_response.field_user_prediction = ml_prediction
+		user_response.field_user_did_update = 1
 		if form.is_valid():
 			ml_model.model_update(
 				img_filename = user_response.field_data_point_string,
@@ -330,6 +339,7 @@ def patient_result(request):
 	if request.POST.get("disagree-no-update"):
 		# Create a form instance with the submitted data
 		user_response.field_user_prediction = 1-ml_prediction
+		user_response.field_user_did_update = 0
 		print('reached disagree-no-update')
 
 
@@ -338,6 +348,7 @@ def patient_result(request):
 	if request.POST.get("disagree-update"):
 		# Create a form instance with the submitted data
 		user_response.field_user_prediction = 1-ml_prediction
+		user_response.field_user_did_update = 1
 		print('reached disagree-UPDATE')
 		# Validate the form
 		print('checking validity')
@@ -386,7 +397,7 @@ def patient_result(request):
 	experiment.save()
 
 	# Write user response to a csv
-	write_to_csv(user_response)
+	write_to_csv(user_response, full_questions)
 
 	# Render patient result page
 	print('hi', user_response.field_data_point_string)
@@ -424,23 +435,30 @@ def experiment_complete(request):
 	return render(request, 'complete.html', context=context)
 
 
-def write_to_csv(user_response):
+def write_to_csv(user_response, full_questions):
 	fields = [
 		user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
-		user_response.field_ml_accuracy, user_response.field_ml_calibration,
+		user_response.field_ml_accuracy,
+		user_response.field_ml_calibration,
 		user_response.field_ml_prediction,
 		user_response.field_instance_ground_truth, user_response.field_user_prediction,
 		user_response.field_user_did_update,
 		user_response.field_user_relationship,
+		full_questions,
 		user_response.field_user_perceived_accuracy,
 		user_response.field_user_calibration,
 		user_response.field_user_personal_confidence,
 		user_response.field_user_AI_confidence
 	]
 
-
+	file_created = path.exists('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv')
 	with open('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:
 		writer = csv.writer(f)
+		if(not file_created):
+			writer.writerow(["patient_num", "patient_filename","accuracy", "calibration",
+				"model_prediction", "ground_truth", "user_prediction", "user_update",
+				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
+				"question_personal_conf","question_model_conf"])
 		writer.writerow(fields)
 
 
