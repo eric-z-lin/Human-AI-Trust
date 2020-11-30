@@ -118,7 +118,7 @@ class ModelMLModel(models.Model):
 			model = pickle.loads(self.model_field)
 
 		dataset = ModifiedDataset([img_filename], self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False)
+		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False, num_workers=8, pin_memory=True)
 
 		prediction = -1
 
@@ -126,8 +126,9 @@ class ModelMLModel(models.Model):
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
 				bs, c, h, w = input.size()
-				varInput = input.view(-1, c, h, w)
-			
+				varInput = input.view(-1, c, h, w).cuda(non_blocking=True)
+				target = target.cuda(non_blocking = True)
+
 				out = model(varInput)
 				# pred = (out>0.5).float()
 				# prediction = pred.item()
@@ -164,13 +165,14 @@ class ModelMLModel(models.Model):
 				test.append(img)
 
 		dataset = ModifiedDataset(test, self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False)
+		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False, num_workers=8, pin_memory=True)
 
 		correct = 0
 
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
-				target = target#.cuda()
+				target = target.cuda(non_blocking=True)
+				input = input.cuda(non_blocking=True)
 
 				bs, c, h, w = input.size()
 				varInput = input.view(-1, c, h, w)
@@ -189,7 +191,7 @@ class ModelMLModel(models.Model):
 		for param in model.densenet121.fc.parameters():
 		    param.requires_grad = True
 
-		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True)
+		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True, num_workers=8, pin_memory=True)
 
 		model.train()
 		optimizer = optim.Adam (model.parameters(), lr=0.00001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
@@ -197,7 +199,9 @@ class ModelMLModel(models.Model):
 
 		for e in range(epochs):
 			for batchID, (varInput, target) in enumerate(dataLoaderTrain):
-				varTarget = target#.cuda(non_blocking = True)
+				varTarget = target.cuda(non_blocking = True)
+				varInput = varInput.cuda(non_blocking = True)
+
 				varOutput = model(varInput)
 				lossvalue = loss(varOutput, varTarget)
 				
@@ -212,8 +216,27 @@ class ModelMLModel(models.Model):
 		nClasses = 2
 		# model = DenseNet121(nClasses)
 		# model = gpu_model.module 
-		model = DenseNet121(nClasses)
-		model.load_state_dict(torch.load(model_pickle_file))
+
+		model = DenseNet121(2).cuda()
+		#model = torch.nn.DataParallel(model).cuda()
+		print('model initialized')
+		gpu_model = torch.load(model_pickle_file)
+
+		from collections import OrderedDict
+		new_state_dict = OrderedDict()
+		for k, v in gpu_model.items():
+		    name = k.replace('module.','') # remove `module.`
+		    new_state_dict[name] = v
+
+		model.load_state_dict(new_state_dict)
+		device = torch.device("cuda")
+		model = model.to(device)
+		print('model loaded')
+
+		# model = DenseNet121(nClasses).cuda()
+		# model.load_state_dict(torch.load(model_pickle_file))
+		# device = torch.device("cuda")
+		# model = model.to(device)
 
 		self.model_field = pickle.dumps(model)
 		# self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))
