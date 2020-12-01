@@ -192,8 +192,7 @@
       });
       // Show and hide button based on model update type
       let model_update_type = "{{update_type}}";
-      console.log('model_update_type', model_update_type);
-      if (model_update_type === 0) {
+      if (model_update_type === "0") {
         // Hide all yes-update-option buttons
         document.getElementById('btn-yes-update-option-1').setAttribute("hidden", "True");
         document.getElementById('btn-yes-update-option-2').setAttribute("hidden", "True");
