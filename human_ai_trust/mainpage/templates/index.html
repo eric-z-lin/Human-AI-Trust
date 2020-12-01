@@ -194,23 +194,23 @@
       let model_update_type = "{{update_type}}";
       if (model_update_type === "0") {
         // Hide all yes-update-option buttons
-        document.getElementById('btn-yes-update-option-1').setAttribute("hidden", "True");
-        document.getElementById('btn-yes-update-option-2').setAttribute("hidden", "True");
-        document.getElementById('btn-yes-update-option-3').setAttribute("hidden", "True");
-        document.getElementById('btn-yes-update-option-4').setAttribute("hidden", "True");
+        document.getElementById('btn-yes-update-option-1').style.display = "none";
+        document.getElementById('btn-yes-update-option-2').style.display = "none";
+        document.getElementById('btn-yes-update-option-3').style.display = "none";
+        document.getElementById('btn-yes-update-option-4').style.display = "none";
         // Show all no-update-option buttons
-        document.getElementById('btn-no-update-option-1').setAttribute("hidden", "False");
-        document.getElementById('btn-no-update-option-2').setAttribute("hidden", "False");
+        document.getElementById('btn-no-update-option-1').style.display = "block";
+        document.getElementById('btn-no-update-option-2').style.display = "block";
       }
       else {
         // Show all yes-update-option buttons
-        document.getElementById('btn-yes-update-option-1').setAttribute("hidden", "False");
-        document.getElementById('btn-yes-update-option-2').setAttribute("hidden", "False");
-        document.getElementById('btn-yes-update-option-3').setAttribute("hidden", "False");
-        document.getElementById('btn-yes-update-option-4').setAttribute("hidden", "False");
+        document.getElementById('btn-yes-update-option-1').style.display = "block";
+        document.getElementById('btn-yes-update-option-2').style.display = "block";
+        document.getElementById('btn-yes-update-option-3').style.display = "block";
+        document.getElementById('btn-yes-update-option-4').style.display = "block";
         // Hide all no-update-option buttons
-        document.getElementById('btn-no-update-option-1').setAttribute("hidden", "True");
-        document.getElementById('btn-no-update-option-2').setAttribute("hidden", "True");
+        document.getElementById('btn-no-update-option-1').style.display = "none";
+        document.getElementById('btn-no-update-option-2').style.display = "none";
       }
     </script>
   
