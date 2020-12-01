@@ -332,7 +332,7 @@ class ModelExperiment(models.Model):
 
 	field_user_name = models.CharField(max_length=40, blank=True, help_text='User name')
 
-	field_patient_number = models.IntegerField(help_text="from 0 to 50", default=0)
+	field_patient_number = models.IntegerField(help_text="from 0 to 30", default=0)
 
 	# Link an ML model to this experiment
 	field_model_ml_model = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
@@ -344,7 +344,7 @@ class ModelExperiment(models.Model):
 	field_patient_ordering = models.TextField(blank=True, null=True, default='{}')
 
 	def set_ordering(self):
-		num_trials = 50
+		num_trials = 30
 		num_buckets = 5
 		splits = [[1,0],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0,1]]
 		patients_per_bucket = num_trials / num_buckets

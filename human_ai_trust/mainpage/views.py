@@ -10,10 +10,11 @@ import csv
 import pandas as pd
 import os.path
 from os import path
+import time
 
 
 CONST_BATCH_UPDATE_FREQUENCY = 2
-MAX_TRIALS = 50
+MAX_TRIALS = 30
 
 
 
@@ -26,6 +27,7 @@ def index(request):
 		experiment = ModelExperiment.objects.get(id=experiment_id)
 
 		ml_model = experiment.field_model_ml_model
+		update_type = experiment.field_ml_model_update_type
 
 		# Get patient case
 		generated_patient = experiment.generate_patient()
@@ -112,7 +114,8 @@ def index(request):
 		    'percent_diagnosed': round(experiment.field_patient_number * 100 / MAX_TRIALS),
 		    'name':experiment.field_user_name,
 		    'ground_truth': new_user_response.field_instance_ground_truth,
-		    'patient_img': patient_img
+		    'patient_img': patient_img,
+		    'update_type': update_type,
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -260,6 +263,7 @@ def patient_result(request):
 	user_response = ModelUserResponse.objects.get(id=user_response_id)
 	experiment = user_response.field_experiment
 	ml_model = experiment.field_model_ml_model
+	update_type = experiment.field_ml_model_update_type
 
 
 	# Table for patient case
@@ -322,6 +326,9 @@ def patient_result(request):
 		print('reached AGREE-no-update')
 		user_response.field_user_prediction = ml_prediction
 		user_response.field_user_did_update = 0
+		if model_update != 0:
+			time.sleep(5)
+
 
 	# Check which button got pressed
 	if request.POST.get("agree-update"):
@@ -342,6 +349,9 @@ def patient_result(request):
 		user_response.field_user_prediction = 1-ml_prediction
 		user_response.field_user_did_update = 0
 		print('reached disagree-no-update')
+		if model_update != 0:
+			time.sleep(5)
+
 
 
 	update_bool = False

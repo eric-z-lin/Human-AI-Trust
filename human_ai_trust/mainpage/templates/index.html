@@ -62,8 +62,9 @@
                               {{ correctForm.as_p }}
                             </div>
                             <div class="modal-footer">
-                              <button type="submit" class="btn btn-secondary" value="agree-no-update" name="agree_no-update">Don't Update</button>
-                              <button type="submit" class="btn btn-primary" value="agree-update" name="agree-update">Update</button>
+                              <button type="submit" class="btn btn-secondary" value="agree-no-update" name="agree_no-update" id="btn-yes-update-option-1">Don't Update</button>
+                              <button type="submit" class="btn btn-primary" value="agree-update" name="agree-update" id="btn-yes-update-option-2">Update</button>
+                              <button type="submit" class="btn btn-primary" value="agree-no-update" name="agree_no-update" id="btn-no-update-option-1">Next patient</button>
                             </div>
                           </form>
                         </div>
@@ -87,8 +88,9 @@
                             </div>
                             <div class="modal-footer">
                               <p style="color:gray; font-size: 12px;"> You can update the AI with your own diagnosis. Note that if your diagnosis is wrong, updating the AI may decrease its accuracy. </p>
-                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update">Don't Update</button>
-                              <button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update">Update AI</button>
+                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-yes-update-option-3">Don't Update</button>
+                              <button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update" id="btn-yes-update-option-4">Update AI</button>
+                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-no-update-option-2">Next Patient</button>
                             </div>
                           </form>
                         </div>
@@ -188,6 +190,30 @@
       document.getElementById("positive-button").addEventListener("click", function (d) {
         document.getElementById("user-diagnosis").innerHTML = "Positive";
       });
+      // Show and hide button based on model update type
+      let model_update_type = "{{update_type}}";
+      if (model_update_type === 0) {
+        // Hide all yes-update-option buttons
+        document.getElementById('btn-yes-update-option-1').style.display = "none";
+        document.getElementById('btn-yes-update-option-2').style.display = "none";
+        document.getElementById('btn-yes-update-option-3').style.display = "none";
+        document.getElementById('btn-yes-update-option-4').style.display = "none";
+        // Show all no-update-option buttons
+        document.getElementById('btn-no-update-option-1').style.display = "block";
+        document.getElementById('btn-no-update-option-2').style.display = "block";
+      }
+      else {
+        if (model_update_type === 0) {
+        // Show all yes-update-option buttons
+        document.getElementById('btn-yes-update-option-1').style.display = "block";
+        document.getElementById('btn-yes-update-option-2').style.display = "block";
+        document.getElementById('btn-yes-update-option-3').style.display = "block";
+        document.getElementById('btn-yes-update-option-4').style.display = "block";
+        // Hide all no-update-option buttons
+        document.getElementById('btn-no-update-option-1').style.display = "none";
+        document.getElementById('btn-no-update-option-2').style.display = "none";
+      }
+      }
     </script>
   
 {% endblock %}
