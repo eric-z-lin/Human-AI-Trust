@@ -167,7 +167,7 @@ class ModelMLModel(models.Model):
 		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False)
 
 		correct = 0
-
+		example_counter = 0
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
 				target = target#.cuda()
@@ -177,9 +177,11 @@ class ModelMLModel(models.Model):
 			
 				out = model(varInput)
 				pred = (out>0.5).float()
-				correct += (pred == target).float().sum().item()
+				correct += (pred == target).float().sum().item()/2
 
-		return (correct + 0.0)/ len(test)
+				assert(pred.shape[0] == target.shape[0])
+				example_counter += target.shape[0]
+		return (correct + 0.0)/ example_counter
 
 	def model_finetune(self, dataset, epochs=1):
 		model = pickle.loads(self.batched_model_field)
@@ -221,7 +223,7 @@ class ModelMLModel(models.Model):
 
 		accuracy = {} #stores the accuracy for case 0 and case 1
 		for case in self.domain.cases:
-			accuracy[case] = self.model_inference_case(case,batched=0)
+			accuracy[str(case)] = self.model_inference_case(case,batched=0)
 
 		good_calibration_std = 0.03
 		bad_calibration_std = 0.05
@@ -274,7 +276,7 @@ class ModelMLModel(models.Model):
 
 		self.model_finetune(dataset, epochs=3)
 		for case in self.domain.cases: #update the accuracy
-			batched_accuracy[case] = self.model_inference_case(case, batched=1)
+			batched_accuracy[str(case)] = self.model_inference_case(case, batched=1)
 
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
 		self.calibration_field = json.dumps(calibration)
@@ -301,7 +303,7 @@ class ModelExperiment(models.Model):
 
 	# Fields
 	# 0 or 1
-	field_ml_model_calibration = models.IntegerField(help_text="0: Poor calibration, 1: Good calibration")
+	field_ml_model_calibration = models.IntegerField(help_text="0: Poor calibration, 1: Good calibration, 2: No confidence displayed")
 	# 0, 1, 2, or 3
 	field_ml_model_update_type = models.IntegerField(help_text="0: Control/no update, 1: instant update, 2: batched update, 3: active learning")
 
