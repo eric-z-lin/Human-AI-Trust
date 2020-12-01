@@ -326,7 +326,7 @@ def patient_result(request):
 		print('reached AGREE-no-update')
 		user_response.field_user_prediction = ml_prediction
 		user_response.field_user_did_update = 0
-		if model_update != 0:
+		if update_type != 0:
 			time.sleep(5)
 
 
@@ -349,7 +349,7 @@ def patient_result(request):
 		user_response.field_user_prediction = 1-ml_prediction
 		user_response.field_user_did_update = 0
 		print('reached disagree-no-update')
-		if model_update != 0:
+		if update_type != 0:
 			time.sleep(5)
 
 
