@@ -345,6 +345,7 @@ def patient_result(request):
 				user_prediction = ml_prediction,#user_response.field_user_prediction, 
 				gt = user_response.field_instance_ground_truth
 			)
+			request.session['batch_update_requested'] = True
 
 	# Check which button got pressed
 	if request.POST.get("disagree-no-update"):
@@ -369,28 +370,23 @@ def patient_result(request):
 		if form.is_valid(): 
 
 			# Instantiate models
-			
 			ml_model.model_update(
 				img_filename = user_response.field_data_point_string,
 				model_prediction = ml_prediction, 
 				user_prediction = 1-ml_prediction,#user_response.field_user_prediction, 
 				gt = user_response.field_instance_ground_truth
-			)
-
-			if experiment.field_ml_model_update_type == 1:
-				update_bool = True
+			)		
 
 			request.session['batch_update_requested'] = True
+
 	batch_update_delayed = False
 	if experiment.field_ml_model_update_type == 2:
 		batch_update_delayed = True
 	# if updatetype is 1, it'll handle updating on its own
 	if experiment.field_ml_model_update_type == 2 and experiment.field_patient_number%CONST_BATCH_UPDATE_FREQUENCY == 0:
-		if request.session['batch_update_requested']:
-			update_bool = True
-			request.session['batch_update_requested'] = False
-			batch_update_delayed = False
-			print('batch_update_requested')
+		update_bool = True
+		batch_update_delayed = False
+		print('batch_update_requested')
 		ml_model.batch_update()
 		print('const-batch-if-statement')
 
