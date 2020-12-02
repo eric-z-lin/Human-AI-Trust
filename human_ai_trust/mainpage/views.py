@@ -400,11 +400,11 @@ def patient_result(request):
 	# Set scores
 	score_update = 0
 	if user_response.field_instance_ground_truth == user_response.field_user_prediction:
-		experiment.field_score += 2
-		score_update = 2
+		experiment.field_score += 20
+		score_update = 20
 	else:
-		experiment.field_score += -4
-		score_update = -4
+		experiment.field_score += -40
+		score_update = -40
 
 
 	user_response.save()
