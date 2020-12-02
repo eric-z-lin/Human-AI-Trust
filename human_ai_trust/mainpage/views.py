@@ -11,6 +11,7 @@ import pandas as pd
 import os.path
 from os import path
 import time
+from datetime import datetime as dt
 
 
 CONST_BATCH_UPDATE_FREQUENCY = 2
@@ -76,7 +77,8 @@ def index(request):
 								field_user_did_update = initUserResponse["field_user_did_update"],
 								# field_user_disagree_reason_choices = initUserResponse["field_user_disagree_reason_choices"],
 								# field_user_disagree_reason_freetext = initUserResponse["field_user_disagree_reason_freetext"],
-								field_experiment = experiment
+								field_experiment = experiment,
+								field_user_start_time = int(time.time())
 							)
 
 		new_user_response.save()
@@ -261,6 +263,7 @@ def patient_result(request):
 	# Load session Id
 	user_response_id = request.session['user_response_id']
 	user_response = ModelUserResponse.objects.get(id=user_response_id)
+	user_response.field_user_end_time = int(time.time())
 	experiment = user_response.field_experiment
 	ml_model = experiment.field_model_ml_model
 	update_type = experiment.field_ml_model_update_type
@@ -447,6 +450,8 @@ def experiment_complete(request):
 
 
 def write_to_csv(user_response, full_questions):
+	time_passed = user_response.field_user_end_time - user_response.field_user_start_time
+	curr_time = datetime.now()
 	fields = [
 		user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
 		user_response.field_ml_accuracy,
@@ -459,7 +464,9 @@ def write_to_csv(user_response, full_questions):
 		user_response.field_user_perceived_accuracy,
 		user_response.field_user_calibration,
 		user_response.field_user_personal_confidence,
-		user_response.field_user_AI_confidence
+		user_response.field_user_AI_confidence,
+		time_passed,
+		curr_time.strftime("%m/%d/%Y, %H:%M:%S")
 	]
 
 	file_created = path.exists('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv')
@@ -469,7 +476,7 @@ def write_to_csv(user_response, full_questions):
 			writer.writerow(["patient_num", "patient_filename","accuracy", "calibration",
 				"model_prediction", "ground_truth", "user_prediction", "user_update",
 				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
-				"question_personal_conf","question_model_conf"])
+				"question_personal_conf","question_model_conf","time_passed","time_stamp"])
 		writer.writerow(fields)
 
 

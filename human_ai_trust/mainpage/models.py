@@ -423,6 +423,8 @@ class ModelUserResponse(models.Model):
 				default=3, help_text='Measure of confidence user in their own mental model')
 	field_user_AI_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence / trust in AI')
+	field_user_start_time = models.IntegerField(null=True, help_text='Start epoch time')
+	field_user_end_time = models.IntegerField(null=True, help_text='End epoch time')
 
 	# linking fields
 	field_data_point_string = models.CharField(max_length=20, help_text="Unique string to specify the input feature combo")
