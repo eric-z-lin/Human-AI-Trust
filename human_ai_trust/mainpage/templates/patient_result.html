@@ -45,6 +45,10 @@
               <span style="color: purple; text-decoration: underline;"> <b> Note: The AI has been updated on recent patient data. </b> </span>
             {% endif %}
 
+            {% if batch_update_delayed %}
+              <span style="color: purple; text-decoration: underline;"> <b> Note: Your diagnosis on this patient example will be used to train the AI model at a later time. </b> </span>
+            {% endif %}
+
             <form action="{% url 'patient_result' %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary" value="next-trial" name="next-trial">Next patient</button>

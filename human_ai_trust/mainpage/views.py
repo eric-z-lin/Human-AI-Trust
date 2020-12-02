@@ -381,13 +381,18 @@ def patient_result(request):
 				update_bool = True
 
 			request.session['batch_update_requested'] = True
-
+	batch_update_delayed = False
+	if experiment.field_ml_model_update_type == 2:
+		batch_update_delayed = True
 	# if updatetype is 1, it'll handle updating on its own
 	if experiment.field_ml_model_update_type == 2 and experiment.field_patient_number%CONST_BATCH_UPDATE_FREQUENCY == 0:
 		if request.session['batch_update_requested']:
 			update_bool = True
 			request.session['batch_update_requested'] = False
+			batch_update_delayed = False
+			print('batch_update_requested')
 		ml_model.batch_update()
+		print('const-batch-if-statement')
 
 
 
@@ -429,6 +434,7 @@ def patient_result(request):
 		'field_score': experiment.field_score,
 		'result_color': 'lightgreen' if (user_response.field_user_prediction == user_response.field_instance_ground_truth) else 'lightcoral',
 		'update_bool': update_bool,
+		'batch_update_delayed': batch_update_delayed,
 	}
 
 	return render(request, 'patient_result.html', context=context)
