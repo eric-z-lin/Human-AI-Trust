@@ -10,10 +10,12 @@ import csv
 import pandas as pd
 import os.path
 from os import path
+import time
+from datetime import datetime as dt
 
 
-CONST_BATCH_UPDATE_FREQUENCY = 2
-MAX_TRIALS = 50
+CONST_BATCH_UPDATE_FREQUENCY = 5
+MAX_TRIALS = 30
 
 
 
@@ -26,6 +28,7 @@ def index(request):
 		experiment = ModelExperiment.objects.get(id=experiment_id)
 
 		ml_model = experiment.field_model_ml_model
+		update_type = experiment.field_ml_model_update_type
 
 		# Get patient case
 		generated_patient = experiment.generate_patient()
@@ -74,7 +77,8 @@ def index(request):
 								field_user_did_update = initUserResponse["field_user_did_update"],
 								# field_user_disagree_reason_choices = initUserResponse["field_user_disagree_reason_choices"],
 								# field_user_disagree_reason_freetext = initUserResponse["field_user_disagree_reason_freetext"],
-								field_experiment = experiment
+								field_experiment = experiment,
+								field_user_start_time = int(time.time())
 							)
 
 		new_user_response.save()
@@ -112,7 +116,8 @@ def index(request):
 		    'percent_diagnosed': round(experiment.field_patient_number * 100 / MAX_TRIALS),
 		    'name':experiment.field_user_name,
 		    'ground_truth': new_user_response.field_instance_ground_truth,
-		    'patient_img': patient_img
+		    'patient_img': patient_img,
+		    'update_type': update_type,
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -174,7 +179,8 @@ def start_experiment(request):
 
 			ml_model = ModelMLModel()
 			ml_model.initialize(
-				model_pickle_file = './mainpage/dl_models/10k_cpu_model_state_dict.model',
+				#model_pickle_file = './mainpage/dl_models/10k_cpu_model_state_dict.model',
+                                model_pickle_file = './mainpage/dl_models/10k_gpu_state_dict.model',
 				calibration=new_experiment.field_ml_model_calibration, 
 				update=new_experiment.field_ml_model_update_type
 			)
@@ -257,8 +263,11 @@ def patient_result(request):
 	# Load session Id
 	user_response_id = request.session['user_response_id']
 	user_response = ModelUserResponse.objects.get(id=user_response_id)
+	user_response.field_user_end_time = int(time.time())
+	# print('time passed', user_response.field_user_start_time, user_response.field_user_end_time)
 	experiment = user_response.field_experiment
 	ml_model = experiment.field_model_ml_model
+	update_type = experiment.field_ml_model_update_type
 
 
 	# Table for patient case
@@ -281,10 +290,9 @@ def patient_result(request):
 
 	ml_prediction = user_response.field_ml_prediction
 
-	print("what is this literally?")
-	print(request.POST.get("agree"))
-	print(request.POST.get("disagree-no-update"))
-	print(request.POST.get("disagree-update"))
+	# print(request.POST.get("agree"))
+	# print(request.POST.get("disagree-no-update"))
+	# print(request.POST.get("disagree-update"))
 
 	full_questions = 0
 
@@ -321,6 +329,9 @@ def patient_result(request):
 		print('reached AGREE-no-update')
 		user_response.field_user_prediction = ml_prediction
 		user_response.field_user_did_update = 0
+		if update_type != 0:
+			time.sleep(5)
+
 
 	# Check which button got pressed
 	if request.POST.get("agree-update"):
@@ -334,6 +345,7 @@ def patient_result(request):
 				user_prediction = ml_prediction,#user_response.field_user_prediction, 
 				gt = user_response.field_instance_ground_truth
 			)
+			request.session['batch_update_requested'] = True
 
 	# Check which button got pressed
 	if request.POST.get("disagree-no-update"):
@@ -341,6 +353,9 @@ def patient_result(request):
 		user_response.field_user_prediction = 1-ml_prediction
 		user_response.field_user_did_update = 0
 		print('reached disagree-no-update')
+		if update_type != 0:
+			time.sleep(5)
+
 
 
 	update_bool = False
@@ -355,25 +370,25 @@ def patient_result(request):
 		if form.is_valid(): 
 
 			# Instantiate models
-			
 			ml_model.model_update(
 				img_filename = user_response.field_data_point_string,
 				model_prediction = ml_prediction, 
 				user_prediction = 1-ml_prediction,#user_response.field_user_prediction, 
 				gt = user_response.field_instance_ground_truth
-			)
-
-			if experiment.field_ml_model_update_type == 1:
-				update_bool = True
+			)		
 
 			request.session['batch_update_requested'] = True
 
+	batch_update_delayed = False
+	if experiment.field_ml_model_update_type == 2:
+		batch_update_delayed = True
 	# if updatetype is 1, it'll handle updating on its own
 	if experiment.field_ml_model_update_type == 2 and experiment.field_patient_number%CONST_BATCH_UPDATE_FREQUENCY == 0:
-		if request.session['batch_update_requested']:
-			update_bool = True
-			request.session['batch_update_requested'] = False
+		update_bool = True
+		batch_update_delayed = False
+		print('batch_update_requested')
 		ml_model.batch_update()
+		print('const-batch-if-statement')
 
 
 
@@ -415,6 +430,7 @@ def patient_result(request):
 		'field_score': experiment.field_score,
 		'result_color': 'lightgreen' if (user_response.field_user_prediction == user_response.field_instance_ground_truth) else 'lightcoral',
 		'update_bool': update_bool,
+		'batch_update_delayed': batch_update_delayed,
 	}
 
 	return render(request, 'patient_result.html', context=context)
@@ -436,6 +452,8 @@ def experiment_complete(request):
 
 
 def write_to_csv(user_response, full_questions):
+	time_passed = user_response.field_user_end_time - user_response.field_user_start_time
+	curr_time = dt.now()
 	fields = [
 		user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
 		user_response.field_ml_accuracy,
@@ -448,7 +466,9 @@ def write_to_csv(user_response, full_questions):
 		user_response.field_user_perceived_accuracy,
 		user_response.field_user_calibration,
 		user_response.field_user_personal_confidence,
-		user_response.field_user_AI_confidence
+		user_response.field_user_AI_confidence,
+		time_passed,
+		curr_time.strftime("%m/%d/%Y, %H:%M:%S")
 	]
 
 	file_created = path.exists('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv')
@@ -458,7 +478,7 @@ def write_to_csv(user_response, full_questions):
 			writer.writerow(["patient_num", "patient_filename","accuracy", "calibration",
 				"model_prediction", "ground_truth", "user_prediction", "user_update",
 				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
-				"question_personal_conf","question_model_conf"])
+				"question_personal_conf","question_model_conf","time_passed","time_stamp"])
 		writer.writerow(fields)
 
 

@@ -118,7 +118,7 @@ class ModelMLModel(models.Model):
 			model = pickle.loads(self.model_field)
 
 		dataset = ModifiedDataset([img_filename], self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False)
+		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False, num_workers=8, pin_memory=True)
 
 		prediction = -1
 
@@ -126,8 +126,9 @@ class ModelMLModel(models.Model):
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
 				bs, c, h, w = input.size()
-				varInput = input.view(-1, c, h, w)
-			
+				varInput = input.view(-1, c, h, w).cuda(non_blocking=True)
+				target = target.cuda(non_blocking = True)
+
 				out = model(varInput)
 				# pred = (out>0.5).float()
 				# prediction = pred.item()
@@ -164,13 +165,14 @@ class ModelMLModel(models.Model):
 				test.append(img)
 
 		dataset = ModifiedDataset(test, self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False)
+		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False, num_workers=8, pin_memory=True)
 
 		correct = 0
 		example_counter = 0
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
-				target = target#.cuda()
+				target = target.cuda(non_blocking=True)
+				input = input.cuda(non_blocking=True)
 
 				bs, c, h, w = input.size()
 				varInput = input.view(-1, c, h, w)
@@ -191,7 +193,7 @@ class ModelMLModel(models.Model):
 		for param in model.densenet121.fc.parameters():
 		    param.requires_grad = True
 
-		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True)
+		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True, num_workers=8, pin_memory=True)
 
 		model.train()
 		optimizer = optim.Adam (model.parameters(), lr=0.00001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
@@ -199,7 +201,9 @@ class ModelMLModel(models.Model):
 
 		for e in range(epochs):
 			for batchID, (varInput, target) in enumerate(dataLoaderTrain):
-				varTarget = target#.cuda(non_blocking = True)
+				varTarget = target.cuda(non_blocking = True)
+				varInput = varInput.cuda(non_blocking = True)
+
 				varOutput = model(varInput)
 				lossvalue = loss(varOutput, varTarget)
 				
@@ -214,8 +218,27 @@ class ModelMLModel(models.Model):
 		nClasses = 2
 		# model = DenseNet121(nClasses)
 		# model = gpu_model.module 
-		model = DenseNet121(nClasses)
-		model.load_state_dict(torch.load(model_pickle_file))
+
+		model = DenseNet121(2).cuda()
+		#model = torch.nn.DataParallel(model).cuda()
+		print('model initialized')
+		gpu_model = torch.load(model_pickle_file)
+
+		from collections import OrderedDict
+		new_state_dict = OrderedDict()
+		for k, v in gpu_model.items():
+		    name = k.replace('module.','') # remove `module.`
+		    new_state_dict[name] = v
+
+		model.load_state_dict(new_state_dict)
+		device = torch.device("cuda")
+		model = model.to(device)
+		print('model loaded')
+
+		# model = DenseNet121(nClasses).cuda()
+		# model.load_state_dict(torch.load(model_pickle_file))
+		# device = torch.device("cuda")
+		# model = model.to(device)
 
 		self.model_field = pickle.dumps(model)
 		# self.model_field = pickle.dumps(pickle.loads(open(model_pickle_file, "rb")))
@@ -309,7 +332,7 @@ class ModelExperiment(models.Model):
 
 	field_user_name = models.CharField(max_length=40, blank=True, help_text='User name')
 
-	field_patient_number = models.IntegerField(help_text="from 0 to 50", default=0)
+	field_patient_number = models.IntegerField(help_text="from 0 to 30", default=0)
 
 	# Link an ML model to this experiment
 	field_model_ml_model = models.ForeignKey(ModelMLModel, on_delete=models.SET_NULL, blank=True, null=True)
@@ -321,14 +344,17 @@ class ModelExperiment(models.Model):
 	field_patient_ordering = models.TextField(blank=True, null=True, default='{}')
 
 	def set_ordering(self):
-		num_trials = 50
-		num_buckets = 5
-		splits = [[1,0],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0,1]]
+		num_trials = 30
+		num_buckets = 3
+		# splits = [[1,0],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0,1]]
+		splits = [[1,0],[0.5,0.5],[0,1]]
 		patients_per_bucket = num_trials / num_buckets
 
 		#image file name format: img_dir/case-diagnosis-name.png
 		normal = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 0)]
 		overexposed = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 1)]
+		random.shuffle(normal)
+		random.shuffle(overexposed)
 
 		ordering = []
 
@@ -400,6 +426,8 @@ class ModelUserResponse(models.Model):
 				default=3, help_text='Measure of confidence user in their own mental model')
 	field_user_AI_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence / trust in AI')
+	field_user_start_time = models.IntegerField(null=True, help_text='Start epoch time')
+	field_user_end_time = models.IntegerField(null=True, help_text='End epoch time')
 
 	# linking fields
 	field_data_point_string = models.CharField(max_length=20, help_text="Unique string to specify the input feature combo")

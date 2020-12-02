@@ -26,7 +26,13 @@ SECRET_KEY = 'h6kk*blu7+onsjr0yia-_8q$=!u6(ksr1nx77vgh)=(na@86$h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['django-env.eba-tijefwik.us-west-2.elasticbeanstalk.com','127.0.0.1']
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'ec2-34-232-72-193.compute-1.amazonaws.com',
+    'localhost',
+    'ec2-54-234-58-217.compute-1.amazonaws.com',
+    'ec2-54-204-102-104.compute-1.amazonaws.com',
+]
 
 
 # Application definition

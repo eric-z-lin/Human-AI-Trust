@@ -1,0 +1,9 @@
+patient_num,patient_filename,accuracy,calibration,model_prediction,ground_truth,user_prediction,user_update,question_relationship,question_perceived_accuracy,question_calibration,question_personal_conf,question_model_conf
+1,./mainpage/dataset/train_dir/0-1-patient26949_study2_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.785}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,0,,5,3,3,3,3
+2,./mainpage/dataset/train_dir/0-1-patient51282_study1_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.785, \""0\"": 0.83, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,,5,3,3,3,3
+3,./mainpage/dataset/train_dir/0-1-patient32916_study2_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.785, \""0\"": 0.83, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,,5,3,3,3,3
+4,./mainpage/dataset/train_dir/0-1-patient39549_study2_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.785, \""0\"": 0.83, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,,5,3,3,3,3
+5,./mainpage/dataset/train_dir/0-0-patient47588_study1_view1_frontal.jpg,"""{\""0\"": 0.81, \""1\"": 0.785, \""0\"": 0.83, \""1\"": 0.735}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,0,1,,1,1,1,1,1
+6,./mainpage/dataset/train_dir/0-0-patient33170_study1_view1_frontal.jpg,"""{\""0\"": 0.83, \""1\"": 0.735, \""0\"": 0.815, \""1\"": 0.8}""","""{\""0\"": 0.052500000000000005, \""1\"": 0.05}""",0,0,0,,5,3,3,3,3
+2,./mainpage/dataset/train_dir/0-1-patient33741_study1_view1_frontal.jpg,"""{\""0\"": 0.78, \""1\"": 0.745}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,,1,0,3,3,3,3
+3,./mainpage/dataset/train_dir/0-1-patient35117_study5_view1_frontal.jpg,"""{\""0\"": 0.78, \""1\"": 0.745}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,0,0,3,1,1,2,5,3
