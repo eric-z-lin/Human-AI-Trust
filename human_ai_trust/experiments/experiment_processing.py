@@ -1,35 +1,55 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import json
+import csv
 
-experiment_id = 3
+experiment_id = "9-EZ-L"
 
 header = ["patient_num", "patient_filename","accuracy", "calibration",
 				"model_prediction", "ground_truth", "user_prediction", "user_update",
 				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
-				"question_personal_conf","question_model_conf"]
+				"question_personal_conf","question_model_conf"]#"question_time"
 
-input_file = csv.DictReader(open('experiments/experiment-'+str(experiment_id)+'.csv'))
+input_file = csv.DictReader(open('experiment-'+str(experiment_id)+'.csv'))
 
 experiment = {}
 
 for row in input_file:
-    print(row)
-    assert(len(row) == len(header))
-    experiment[int(row["patient_num"])] = {}
-    for h in header:
-    	if(h == "accuracy" or h == "calibration"):
-    		experiment[row["patient_num"]][h] = json.loads(row[h])
-    	elif(h == "patient_filename"):
-    		experiment[row["patient_num"]][h] = row[h]
-    	else:
-    		experiment[row["patient_num"]][h] = int(row[h])
+	patient_num = int(row["patient_num"])
+	print(patient_num)
+	if(len(row) == len(header)):
+		experiment[patient_num] = {}
+		for h in header:
+			if(h == "accuracy" or h == "calibration"):
+				d = json.loads(row[h])
+				experiment[patient_num][h] = json.loads(d)
+				#print(experiment[patient_num][h]["0"])
+			elif(h == "patient_filename"):
+				experiment[patient_num][h] = row[h]
+			elif(h == "user_update"):
+				if(row[h] == "1"):
+					experiment[patient_num][h] = 1
+				else:
+					experiment[patient_num][h] = 0
+			else:
+				experiment[patient_num][h] = int(row[h])
+	else:
+		prin("problem")
 
 trends = {}
 trends["positive_reinforcement"] = [1 if(experiment[i]["user_update"] == 1 and experiment[i]["user_prediction"] == experiment[i]["model_prediction"]) else 0 for i in range(1,len(experiment.keys())+1)]
 trends["negative_reinforcement"] = [1 if(experiment[i]["user_update"] == 1 and experiment[i]["user_prediction"] != experiment[i]["model_prediction"]) else 0 for i in range(1,len(experiment.keys())+1)]
 trends["all_questions"] = {}
+trends["gt"] = {}
+trends["ml_pred"] = {}
+trends["user_pred"] = {}
+
+trends["moving_user_acc"] = {}
+trends["moving_model_acc"] = {}
+trends["moving_model_test_acc"] = {}
+
 
 for i in range(1,len(experiment.keys())+1):
 	if(experiment[i]["full_questions"] == 1):
@@ -37,6 +57,14 @@ for i in range(1,len(experiment.keys())+1):
 		for j in ["question_perceived_accuracy","question_calibration",
 				"question_personal_conf","question_model_conf"]:
 			trends["all_questions"][i][j] = experiment[i][j]
+		trends["gt"][i] = experiment[i]["ground_truth"]
+		trends["ml_pred"][i] = experiment[i]["model_prediction"]
+		trends["user_pred"][i] = experiment[i]["user_prediction"]
+
+	if(i >= 5):
+		trends["moving_model_acc"][i] = sum([1 if (experiment[j]["model_prediction"] == experiment[j]["ground_truth"]) else 0 for j in range(i-4,i+1)])/5
+		trends["moving_user_acc"][i] = sum([1 if (experiment[j]["user_prediction"] == experiment[j]["ground_truth"]) else 0 for j in range(i-4,i+1)])/5
+		trends["moving_model_test_acc"][i] = (experiment[i]["accuracy"]["1"]+experiment[i]["accuracy"]["0"])/2
 
 """
 THINGS TO MEASURE:
@@ -45,14 +73,39 @@ THINGS TO MEASURE:
 	(3) Positive Reinforcement versus Negative
 """
 fig, ax = plt.subplots()
-data = np.array([[4.29488806,-5.34487081],
-                [3.63116248,-2.48616998],
-                [-0.56023222,-5.89586997],
-                [-0.51538502,-2.62569576],
-                [-4.08561754,-4.2870525 ],
-                [-0.80869722,10.12529582]])
-colors = ['red','red','red','blue','red','blue']
-for xy, color in zip(data, colors):
-    ax.plot(xy[0],xy[1],'o',color=color, picker=True)
+
+plt.title('User and Model Accuracy over Time')
+plt.xlabel('round number')
+plt.ylabel('accuracy')
+a = matplotlib.patches.Patch(color='black', label='User accurcy')
+b = matplotlib.patches.Patch(color='red', label='Model accuracy')
+c = matplotlib.patches.Patch(color='purple', label='Model performance on test')
+plt.legend(handles=[a,b,c])
+
+#user
+arr = [[i, trends["moving_user_acc"][i]] for i in range(5, 5+len(trends["moving_user_acc"].keys()))]
+data_user = np.array(arr)
+ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="black", picker=True)
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_user_acc"].keys()))]
+for xy, color in zip(data_user, colors):
+	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
+
+#model
+arr = [[i, trends["moving_model_acc"][i]] for i in range(5, 5+len(trends["moving_model_acc"].keys()))]
+data_AI = np.array(arr)
+ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="red", picker=True)
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_acc"].keys()))]
+for xy, color in zip(data_AI, colors):
+	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
+
+#model test
+arr = [[i, trends["moving_model_test_acc"][i]] for i in range(5, 5+len(trends["moving_model_test_acc"].keys()))]
+data_AI_test = np.array(arr)
+
+ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="purple", picker=True)
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_test_acc"].keys()))]
+for xy, color in zip(data_AI_test, colors):
+	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
+
 
 plt.show()
