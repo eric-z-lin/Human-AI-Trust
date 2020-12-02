@@ -451,7 +451,7 @@ def experiment_complete(request):
 
 def write_to_csv(user_response, full_questions):
 	time_passed = user_response.field_user_end_time - user_response.field_user_start_time
-	curr_time = datetime.now()
+	curr_time = dt.now()
 	fields = [
 		user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
 		user_response.field_ml_accuracy,
