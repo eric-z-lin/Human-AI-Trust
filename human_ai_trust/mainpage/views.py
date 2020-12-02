@@ -14,7 +14,7 @@ import time
 from datetime import datetime as dt
 
 
-CONST_BATCH_UPDATE_FREQUENCY = 2
+CONST_BATCH_UPDATE_FREQUENCY = 5
 MAX_TRIALS = 30
 
 
