@@ -42,7 +42,7 @@
             <br>
 
             {% if update_bool %}
-              <b> Note: The AI has been updated on recent patient data. </b>
+              <span style="color: purple; text-decoration: underline;"> <b> Note: The AI has been updated on recent patient data. </b> </span>
             {% endif %}
 
             <form action="{% url 'patient_result' %}" method="POST">

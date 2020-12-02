@@ -1,5 +1,0 @@
-patient_num,patient_filename,accuracy,calibration,model_prediction,ground_truth,user_prediction,user_update,question_relationship,full_questions,question_perceived_accuracy,question_calibration,question_personal_conf,question_model_conf
-1,./mainpage/dataset/train_dir/0-1-patient30754_study9_view1_frontal.jpg,"""{\""0\"": 0.805, \""1\"": 0.715}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,0,1,5,0,3,3,3,3
-2,./mainpage/dataset/train_dir/0-1-patient20425_study2_view1_frontal.jpg,"""{\""0\"": 0.795, \""1\"": 0.805}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,,5,0,3,3,3,3
-3,./mainpage/dataset/train_dir/0-0-patient28869_study1_view1_frontal.jpg,"""{\""0\"": 0.795, \""1\"": 0.805}""","""{\""0\"": 0.05, \""1\"": 0.05}""",0,0,1,0,1,0,3,3,3,3
-4,./mainpage/dataset/train_dir/0-1-patient37362_study3_view1_frontal.jpg,"""{\""0\"": 0.795, \""1\"": 0.805}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,1,5,0,3,3,3,3

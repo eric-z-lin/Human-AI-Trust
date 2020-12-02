@@ -62,6 +62,7 @@
                               {{ correctForm.as_p }}
                             </div>
                             <div class="modal-footer">
+                              <p style="color:gray; font-size: 12px;" id="update-explanation-1"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
                               <button type="submit" class="btn btn-secondary" value="agree-no-update" name="agree_no-update" id="btn-yes-update-option-1">Don't Update</button>
                               <button type="submit" class="btn btn-primary" value="agree-update" name="agree-update" id="btn-yes-update-option-2">Update</button>
                               <button type="submit" class="btn btn-primary" value="agree-no-update" name="agree_no-update" id="btn-no-update-option-1">Next patient</button>
@@ -87,7 +88,7 @@
                               {{ correctForm.as_p }}                              
                             </div>
                             <div class="modal-footer">
-                              <p style="color:gray; font-size: 12px;"> You can update the AI with your own diagnosis. Note that if your diagnosis is wrong, updating the AI may decrease its accuracy. </p>
+                              <p style="color:gray; font-size: 12px;" id="update-explanation-2"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
                               <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-yes-update-option-3">Don't Update</button>
                               <button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update" id="btn-yes-update-option-4">Update AI</button>
                               <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-no-update-option-2">Next Patient</button>
@@ -136,6 +137,7 @@
                     <p> Name: {{name}}</p>
                     <h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
                     <p> You are diagnosing patient number <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }}.</p>
+                    <span style="color: blue;" > Please note that each diagnosis should take AT MOST 1 minute. </span>
                     <div class="progress">
                       <div class="progress-bar progress-bar-info" role="progressbar"
                       aria-valuenow="{{ percent_diagnosed }}" aria-valuemin="0" aria-valuemax="100" style="width:{{percent_diagnosed}}%">
@@ -198,6 +200,8 @@
         document.getElementById('btn-yes-update-option-2').style.display = "none";
         document.getElementById('btn-yes-update-option-3').style.display = "none";
         document.getElementById('btn-yes-update-option-4').style.display = "none";
+        document.getElementById('update-explanation-1').style.display = "none";
+        document.getElementById('update-explanation-2').style.display = "none";
         // Show all no-update-option buttons
         document.getElementById('btn-no-update-option-1').style.display = "block";
         document.getElementById('btn-no-update-option-2').style.display = "block";
@@ -208,6 +212,8 @@
         document.getElementById('btn-yes-update-option-2').style.display = "block";
         document.getElementById('btn-yes-update-option-3').style.display = "block";
         document.getElementById('btn-yes-update-option-4').style.display = "block";
+        document.getElementById('update-explanation-1').style.display = "block";
+        document.getElementById('update-explanation-2').style.display = "block";
         // Hide all no-update-option buttons
         document.getElementById('btn-no-update-option-1').style.display = "none";
         document.getElementById('btn-no-update-option-2').style.display = "none";
