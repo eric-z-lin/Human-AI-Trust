@@ -353,7 +353,7 @@ class ModelExperiment(models.Model):
 		#image file name format: img_dir/case-diagnosis-name.png
 		normal = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 0)]
 		overexposed = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 1)]
-		random.shuffle(normal) 
+		random.shuffle(normal)
 		random.shuffle(overexposed)
 
 		ordering = []
