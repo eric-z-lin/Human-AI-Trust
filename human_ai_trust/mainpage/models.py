@@ -157,6 +157,7 @@ class ModelMLModel(models.Model):
 		else:
 			model = pickle.loads(self.model_field)
 		
+		#image file name format: img_dir/case-diagnosis-name.png
 		# test = [(img if (('/'+str(case)+'-') in img)) for img in self.domain.test_imgs]
 		test = []
 
@@ -288,16 +289,16 @@ class ModelMLModel(models.Model):
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
 				calibration[case] = min(calibration[case]*0.9, 0.1)
-			mult = 2
+			mult = 4
 		else: #(model_prediction != user_prediction): #user and model disagreed, accuracy update
-			mult = 5
+			mult = 7
 		dataset = ModifiedDataset(self.domain.train_imgs, transform)
 		dataset.add_data(img_filename, user_prediction, multiplier=mult)
 
 		#print("dataset,", dataset.image_names)
 		#print("dataset labels,", dataset.labels)
 
-		self.model_finetune(dataset, epochs=3)
+		self.model_finetune(dataset, epochs=5)
 		for case in self.domain.cases: #update the accuracy
 			batched_accuracy[str(case)] = self.model_inference_case(case, batched=1)
 

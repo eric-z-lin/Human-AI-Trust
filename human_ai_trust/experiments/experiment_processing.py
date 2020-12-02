@@ -48,7 +48,8 @@ trends["user_pred"] = {}
 
 trends["moving_user_acc"] = {}
 trends["moving_model_acc"] = {}
-trends["moving_model_test_acc"] = {}
+trends["moving_model_test_acc_0"] = {}
+trends["moving_model_test_acc_1"] = {}
 
 
 for i in range(1,len(experiment.keys())+1):
@@ -64,7 +65,8 @@ for i in range(1,len(experiment.keys())+1):
 	if(i >= 5):
 		trends["moving_model_acc"][i] = sum([1 if (experiment[j]["model_prediction"] == experiment[j]["ground_truth"]) else 0 for j in range(i-4,i+1)])/5
 		trends["moving_user_acc"][i] = sum([1 if (experiment[j]["user_prediction"] == experiment[j]["ground_truth"]) else 0 for j in range(i-4,i+1)])/5
-		trends["moving_model_test_acc"][i] = (experiment[i]["accuracy"]["1"]+experiment[i]["accuracy"]["0"])/2
+		trends["moving_model_test_acc_0"][i] = experiment[i]["accuracy"]["0"]
+		trends["moving_model_test_acc_1"][i] = experiment[i]["accuracy"]["1"]
 
 """
 THINGS TO MEASURE:
@@ -78,9 +80,10 @@ plt.title('User and Model Accuracy over Time')
 plt.xlabel('round number')
 plt.ylabel('accuracy')
 a = matplotlib.patches.Patch(color='black', label='User accurcy')
-b = matplotlib.patches.Patch(color='red', label='Model accuracy')
-c = matplotlib.patches.Patch(color='purple', label='Model performance on test')
-plt.legend(handles=[a,b,c])
+b = matplotlib.patches.Patch(color='purple', label='Model accuracy')
+c = matplotlib.patches.Patch(color='orange', label='Model performance on test for normal')
+d = matplotlib.patches.Patch(color='yellow', label='Model performance on test for overexposed')
+plt.legend(handles=[a,b,c,d])
 
 #user
 arr = [[i, trends["moving_user_acc"][i]] for i in range(5, 5+len(trends["moving_user_acc"].keys()))]
@@ -93,17 +96,26 @@ for xy, color in zip(data_user, colors):
 #model
 arr = [[i, trends["moving_model_acc"][i]] for i in range(5, 5+len(trends["moving_model_acc"].keys()))]
 data_AI = np.array(arr)
-ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="red", picker=True)
+ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="purple", picker=True)
 colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_acc"].keys()))]
 for xy, color in zip(data_AI, colors):
 	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
 
 #model test
-arr = [[i, trends["moving_model_test_acc"][i]] for i in range(5, 5+len(trends["moving_model_test_acc"].keys()))]
+arr = [[i, trends["moving_model_test_acc_0"][i]] for i in range(5, 5+len(trends["moving_model_test_acc_0"].keys()))]
 data_AI_test = np.array(arr)
 
-ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="purple", picker=True)
-colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_test_acc"].keys()))]
+ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="orange", picker=True)
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_test_acc_0"].keys()))]
+for xy, color in zip(data_AI_test, colors):
+	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
+
+#model test
+arr = [[i, trends["moving_model_test_acc_1"][i]] for i in range(5, 5+len(trends["moving_model_test_acc_1"].keys()))]
+data_AI_test = np.array(arr)
+
+ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="yellow", picker=True)
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_test_acc_1"].keys()))]
 for xy, color in zip(data_AI_test, colors):
 	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
 
