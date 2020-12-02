@@ -264,6 +264,7 @@ def patient_result(request):
 	user_response_id = request.session['user_response_id']
 	user_response = ModelUserResponse.objects.get(id=user_response_id)
 	user_response.field_user_end_time = int(time.time())
+	print('time passed', user_response.field_user_start_time, user_response.field_user_end_time)
 	experiment = user_response.field_experiment
 	ml_model = experiment.field_model_ml_model
 	update_type = experiment.field_ml_model_update_type

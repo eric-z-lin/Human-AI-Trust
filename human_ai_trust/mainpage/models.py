@@ -345,13 +345,16 @@ class ModelExperiment(models.Model):
 
 	def set_ordering(self):
 		num_trials = 30
-		num_buckets = 5
-		splits = [[1,0],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0,1]]
+		num_buckets = 3
+		# splits = [[1,0],[0.75,0.25],[0.5,0.5],[0.25,0.75],[0,1]]
+		splits = [[1,0],[0.5,0.5],[0,1]]
 		patients_per_bucket = num_trials / num_buckets
 
 		#image file name format: img_dir/case-diagnosis-name.png
 		normal = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 0)]
 		overexposed = [i for i in self.domain.train_imgs if (int(i.split("/")[-1].split("-")[0]) == 1)]
+		random.shuffle(normal) 
+		random.shuffle(overexposed)
 
 		ordering = []
 
