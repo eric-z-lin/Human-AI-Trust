@@ -8,7 +8,7 @@ from PIL import Image
 source = "train" #train,val
 #source = "val"
 #directory = "train_dir_expose_noise_blur" #train_dir_expose_noise_blur, test_dir_expose_noise_blur
-directory = "train_dir"
+directory = "test_dir"
 #directory = "test_dir"
 
 def spotlight(img: Image, center: (int, int), radius: int) -> Image:
@@ -29,29 +29,36 @@ result = [y for x in os.walk("CheXpert-v1.0-small/"+source+"/") for y in glob(os
 
 file_to_diagnosis = {}
 
-if(source == "train"):
-	csv_patients = "for_experiment_edema_only.csv"
+if(directory == "train_dir"):
+	print("train")
+	csv_patients = "train500_experiment_edema_only.csv"#"for_experiment_edema_only.csv"
 else:
-	csv_patients = 'stat_val_edema_only.csv'
+	print("test")
+	csv_patients = "test500_experiment_edema_only.csv"#'stat_val_edema_only.csv'
 
 with open (csv_patients) as csvfile:
 	readCSV = csv.reader(csvfile, delimiter=',')
 	for row in readCSV:
 		if("Path" not in row[0]):
 			filename = row[0]
+			"""
 			if(source == "train"):
 				file = filename
 			else:
 				file = filename.replace("train","val")
+			"""
+			file = filename
 			file_to_diagnosis[file] = int(float(row[6]))
-
-print(len(result))
-for counter in range(len(result)):
-	filename = result[counter]
+#print(file_to_diagnosis)
+for filename in file_to_diagnosis.keys():
+	#filename = result[counter]
+	"""
 	if(source == "train"):
 		file = filename
 	else:
 		file = filename.replace("train","val")
+	"""
+	file = filename
 	#old format: CheXpert-v1.0-small/train/patient32584/study3/view1_frontal.jpg
 	#new format: img_dir/case-diagnosis-name.png
 	file_arr = file.split("/")
@@ -61,20 +68,22 @@ for counter in range(len(result)):
 	case0_image = cv.imread(file)
 	
 	#CASE 1
-	image = cv.imread(file, cv.IMREAD_GRAYSCALE)
+	case1_image = cv.imread(file, cv.IMREAD_GRAYSCALE)
 		#overexpose
-	image2 = cv.convertScaleAbs(image, alpha=1.0, beta=10) 
+	case1_image = cv.convertScaleAbs(case1_image, alpha=1.0, beta=10) 
 		#add noise
-	uniform_noise = np.zeros((image.shape[0], image.shape[1]),dtype=np.uint8)
+	uniform_noise = np.zeros((case1_image.shape[0], case1_image.shape[1]),dtype=np.uint8)
 	cv.randu(uniform_noise,0,255)
 	uniform_noise = (uniform_noise*0.3).astype(np.uint8)
-	case1_image = cv.add(image2,uniform_noise)
+	case1_image = cv.add(case1_image,uniform_noise)
 		#blur
 	case1_image = cv.blur(case1_image,(3,3))
 	#case1_image = image3
+	#im_pil = Image.fromarray(case1_image)
 
 
-	if(source == "train"):
+
+	if(directory == "train_dir"):
 		cv.imwrite("mainpage/dataset/"+directory+"/"+"0-"+name, case0_image)
 	else:
 		cv.imwrite("mainpage/dataset/"+directory+"/"+"0-"+name, case0_image)
