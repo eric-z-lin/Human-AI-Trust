@@ -289,9 +289,9 @@ class ModelMLModel(models.Model):
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
 				calibration[case] = min(calibration[case]*0.9, 0.1)
-			mult = len(self.domain.train_imgs)
+			mult = len(self.domain.train_imgs)//10
 		else: #(model_prediction != user_prediction): #user and model disagreed, accuracy update
-			mult = len(self.domain.train_imgs)
+			mult = len(self.domain.train_imgs)//7
 		dataset = ModifiedDataset(self.domain.train_imgs, transform)
 		dataset.add_data(img_filename, user_prediction, multiplier=mult)
 
