@@ -289,16 +289,16 @@ class ModelMLModel(models.Model):
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
 				calibration[case] = min(calibration[case]*0.9, 0.1)
-			mult = 4
+			mult = len(self.domain.train_imgs)
 		else: #(model_prediction != user_prediction): #user and model disagreed, accuracy update
-			mult = 7
+			mult = len(self.domain.train_imgs)
 		dataset = ModifiedDataset(self.domain.train_imgs, transform)
 		dataset.add_data(img_filename, user_prediction, multiplier=mult)
 
 		#print("dataset,", dataset.image_names)
 		#print("dataset labels,", dataset.labels)
 
-		self.model_finetune(dataset, epochs=5)
+		self.model_finetune(dataset, epochs=3)
 		for case in self.domain.cases: #update the accuracy
 			batched_accuracy[str(case)] = self.model_inference_case(case, batched=1)
 			print(case)

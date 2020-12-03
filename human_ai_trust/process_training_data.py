@@ -3,11 +3,27 @@ from glob import glob
 import cv2 as cv
 import numpy as np
 import csv
+from PIL import Image
 
-#source = "train" #train,val
-source = "val"
+source = "train" #train,val
+#source = "val"
 #directory = "train_dir_expose_noise_blur" #train_dir_expose_noise_blur, test_dir_expose_noise_blur
-directory = "test_dir_expose_noise_blur"
+directory = "train_dir"
+#directory = "test_dir"
+
+def spotlight(img: Image, center: (int, int), radius: int) -> Image:
+    width, height = img.size
+    overlay_color = (0, 0, 0, 128)
+    img_overlay = Image.new(size=img.size, color=overlay_color, mode='RGBA')
+    for x in range(width):
+        for y in range(height):
+            dx = x - center[0]
+            dy = y - center[1]
+            distance = math.sqrt(dx * dx + dy * dy)
+            if distance < radius:
+                img_overlay.putpixel((x, y), (0, 0, 0, 0))
+    img.paste(img_overlay, None, mask=img_overlay)
+    return img
 
 result = [y for x in os.walk("CheXpert-v1.0-small/"+source+"/") for y in glob(os.path.join(x[0], '*.jpg'))]
 
@@ -47,22 +63,19 @@ for counter in range(len(result)):
 	#CASE 1
 	image = cv.imread(file, cv.IMREAD_GRAYSCALE)
 		#overexpose
-	image2 = cv.convertScaleAbs(image, alpha=1.0, beta=20) 
+	image2 = cv.convertScaleAbs(image, alpha=1.0, beta=10) 
 		#add noise
-	gaussian_noise = np.zeros((image.shape[0], image.shape[1]),dtype=np.uint8)
-	cv.randn(gaussian_noise, 128, 20)
-	gaussian_noise = (gaussian_noise*0.3).astype(np.uint8)
-	image3 = cv.add(image2,gaussian_noise)
+	uniform_noise = np.zeros((image.shape[0], image.shape[1]),dtype=np.uint8)
+	cv.randu(uniform_noise,0,255)
+	uniform_noise = (uniform_noise*0.3).astype(np.uint8)
+	case1_image = cv.add(image2,uniform_noise)
 		#blur
-	case1_image = cv.blur(image3,(3,3))
+	case1_image = cv.blur(case1_image,(3,3))
 	#case1_image = image3
 
 
 	if(source == "train"):
-		if(counter < 0.7*len(result)):
-			cv.imwrite("mainpage/dataset/"+directory+"/"+"0-"+name, case0_image)
-		else:
-			cv.imwrite("mainpage/dataset/"+directory+"/"+"1-"+name, case1_image)
+		cv.imwrite("mainpage/dataset/"+directory+"/"+"0-"+name, case0_image)
 	else:
 		cv.imwrite("mainpage/dataset/"+directory+"/"+"0-"+name, case0_image)
 		cv.imwrite("mainpage/dataset/"+directory+"/"+"1-"+name, case1_image)
