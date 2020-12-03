@@ -190,7 +190,7 @@ class ModelMLModel(models.Model):
 		model = pickle.loads(self.batched_model_field)
 
 		for param in model.densenet121.parameters():
-		    param.requires_grad = False
+		    param.requires_grad = True
 		for param in model.densenet121.fc.parameters():
 		    param.requires_grad = True
 
