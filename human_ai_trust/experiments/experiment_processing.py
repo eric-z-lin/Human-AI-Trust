@@ -5,12 +5,12 @@ import matplotlib
 import json
 import csv
 
-experiment_id = "9-EZ-L"
+experiment_id = "24"
 
 header = ["patient_num", "patient_filename","accuracy", "calibration",
 				"model_prediction", "ground_truth", "user_prediction", "user_update",
 				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
-				"question_personal_conf","question_model_conf"]#"question_time"
+				"question_personal_conf","question_model_conf","time_passed","time_stamp","user_name"]#"question_time"
 
 input_file = csv.DictReader(open('experiment-'+str(experiment_id)+'.csv'))
 
@@ -33,6 +33,8 @@ for row in input_file:
 					experiment[patient_num][h] = 1
 				else:
 					experiment[patient_num][h] = 0
+			elif(h == "time_passed" or h == "time_stamp" or h == "user_name"):
+				experiment[patient_num][h] = row[h]
 			else:
 				experiment[patient_num][h] = int(row[h])
 	else:
@@ -65,8 +67,8 @@ for i in range(1,len(experiment.keys())+1):
 	if(i >= 5):
 		trends["moving_model_acc"][i] = sum([1 if (experiment[j]["model_prediction"] == experiment[j]["ground_truth"]) else 0 for j in range(i-4,i+1)])/5
 		trends["moving_user_acc"][i] = sum([1 if (experiment[j]["user_prediction"] == experiment[j]["ground_truth"]) else 0 for j in range(i-4,i+1)])/5
-		trends["moving_model_test_acc_0"][i] = experiment[i]["accuracy"]["0"]
-		trends["moving_model_test_acc_1"][i] = experiment[i]["accuracy"]["1"]
+	trends["moving_model_test_acc_0"][i] = experiment[i]["accuracy"]["0"]
+	trends["moving_model_test_acc_1"][i] = experiment[i]["accuracy"]["1"]
 
 """
 THINGS TO MEASURE:
@@ -102,20 +104,20 @@ for xy, color in zip(data_AI, colors):
 	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
 
 #model test
-arr = [[i, trends["moving_model_test_acc_0"][i]] for i in range(5, 5+len(trends["moving_model_test_acc_0"].keys()))]
+arr = [[i, trends["moving_model_test_acc_0"][i]] for i in range(1, 1+len(trends["moving_model_test_acc_0"].keys()))]
 data_AI_test = np.array(arr)
 
 ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="orange", picker=True)
-colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_test_acc_0"].keys()))]
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(1,1+len(trends["moving_model_test_acc_0"].keys()))]
 for xy, color in zip(data_AI_test, colors):
 	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
 
 #model test
-arr = [[i, trends["moving_model_test_acc_1"][i]] for i in range(5, 5+len(trends["moving_model_test_acc_1"].keys()))]
+arr = [[i, trends["moving_model_test_acc_1"][i]] for i in range(1, 1+len(trends["moving_model_test_acc_1"].keys()))]
 data_AI_test = np.array(arr)
 
 ax.plot([i[0] for i in arr],[i[1] for i in arr], 'o-', color="yellow", picker=True)
-colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(5,5+len(trends["moving_model_test_acc_1"].keys()))]
+colors = ['black' if (experiment[i]["user_update"] == 0) else 'blue' for i in range(1,1+len(trends["moving_model_test_acc_1"].keys()))]
 for xy, color in zip(data_AI_test, colors):
 	ax.plot(xy[0],xy[1], 'o', color=color, picker=True)
 
