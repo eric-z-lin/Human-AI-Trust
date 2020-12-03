@@ -22,7 +22,7 @@ from mainpage.torchhelper import DenseNet121
 class ModifiedDataset(Dataset):
 	def __init__(self, imgs, transform=None):
 		#image file name format: img_dir/case-diagnosis-name.png
-		self.image_names = imgs
+		self.image_names = copy.deepcopy(imgs)
 		self.labels = []
 		self.transform = transform
 
@@ -190,7 +190,7 @@ class ModelMLModel(models.Model):
 		model = pickle.loads(self.batched_model_field)
 
 		for param in model.densenet121.parameters():
-		    param.requires_grad = False
+		    param.requires_grad = True
 		for param in model.densenet121.fc.parameters():
 		    param.requires_grad = True
 
@@ -289,19 +289,20 @@ class ModelMLModel(models.Model):
 				calibration[case] = min(calibration[case]*1.05, 0.1)
 			else: #user and model were correct, calibration increases
 				calibration[case] = min(calibration[case]*0.9, 0.1)
-			mult = 4
+			mult = 50 #len(self.domain.train_imgs)//10
 		else: #(model_prediction != user_prediction): #user and model disagreed, accuracy update
-			mult = 7
+			mult = 70 #len(self.domain.train_imgs)//7
 		dataset = ModifiedDataset(self.domain.train_imgs, transform)
 		dataset.add_data(img_filename, user_prediction, multiplier=mult)
 
 		#print("dataset,", dataset.image_names)
 		#print("dataset labels,", dataset.labels)
 
-		self.model_finetune(dataset, epochs=5)
+		self.model_finetune(dataset, epochs=3)
 		for case in self.domain.cases: #update the accuracy
 			batched_accuracy[str(case)] = self.model_inference_case(case, batched=1)
-
+			print(case)
+			print(batched_accuracy[str(case)])
 		self.batched_accuracy_field = json.dumps(batched_accuracy)
 		self.calibration_field = json.dumps(calibration)
 

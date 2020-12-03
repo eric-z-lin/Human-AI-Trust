@@ -1,3 +1,6 @@
 patient_num,patient_filename,accuracy,calibration,model_prediction,ground_truth,user_prediction,user_update,question_relationship,full_questions,question_perceived_accuracy,question_calibration,question_personal_conf,question_model_conf
 1,./mainpage/dataset/train_dir/0-0-patient17543_study1_view1_frontal.jpg,"""{\""0\"": 0.795, \""1\"": 0.805}""","""{\""0\"": 0.05, \""1\"": 0.05}""",0,0,0,1,3,0,3,3,3,3
 2,./mainpage/dataset/train_dir/0-1-patient39417_study10_view1_frontal.jpg,"""{\""0\"": 0.795, \""1\"": 0.805}""","""{\""0\"": 0.045000000000000005, \""1\"": 0.05}""",1,1,1,1,3,0,3,3,3,3
+1,./mainpage/dataset/test_dir/0-1-patient42926_study1_view1_frontal.jpg,"""{\""0\"": 0.795, \""1\"": 0.74}""","""{\""0\"": 0.05, \""1\"": 0.05}""",1,1,1,1,3,0,3,3,3,3,4,"12/03/2020, 01:02:06",Jack
+2,./mainpage/dataset/test_dir/0-1-patient31176_study3_view1_frontal.jpg,"""{\""0\"": 0.84, \""1\"": 0.725}""","""{\""0\"": 0.045000000000000005, \""1\"": 0.05}""",1,1,1,1,3,0,3,3,3,3,6,"12/03/2020, 01:02:30",Jack
+3,./mainpage/dataset/test_dir/0-0-patient07410_study30_view1_frontal.jpg,"""{\""0\"": 0.83, \""1\"": 0.725}""","""{\""0\"": 0.04050000000000001, \""1\"": 0.05}""",1,0,1,1,3,1,2,2,2,1,9,"12/03/2020, 01:02:53",Jack
