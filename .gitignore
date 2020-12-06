@@ -14,3 +14,5 @@ human_ai_trust/.DS_Store
 human_ai_trust/.DS_Store
 human_ai_trust/hci-project.pem
 human_ai_trust/mainpage/static/dataset
+*.csv
+*.png
