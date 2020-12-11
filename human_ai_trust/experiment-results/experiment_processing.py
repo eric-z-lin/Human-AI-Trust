@@ -115,25 +115,29 @@ for experiment_id in experiment_ids:
 	ax = plt.subplot(111)
 
 	version = experiment_group_dict[experiment_id]
+	print(version, experiment_id)
+	print(sum(trends["moving_user_acc"])*20-40*(30-sum(trends["moving_user_acc"])))
+	print(sum([1 if (trends["moving_user_acc"][i] == trends["moving_model_acc"][i]) else 0 for i in range(1, 31)]))
 	plt.title("P"+experiment_id.split("-")[1] + ": " + version)
 	plt.xlabel('Round Number')
 	plt.ylabel('Accuracy')
+	plt.ylim(0, 1.2)
 	a = matplotlib.patches.Patch(color='black', label='User accuracy')
 	b = matplotlib.patches.Patch(color='green', label='Model accuracy')
 	c = matplotlib.patches.Patch(color='orange', label='Model performance on test for normal')
 	d = matplotlib.patches.Patch(color='purple', label='Model performance on test for degraded')
-	e = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='green', label='Model and User disagreed, Prediction correct')
-	f = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='red', label='Model and User disagreed, Prediction incorrect')
-	g = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='lightblue', label='User update correct')
-	h = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='darkblue', label='User update incorrect')
+	e = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='green', label='Model and User disagreed, User correct')
+	f = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='red', label='Model and User disagreed, User incorrect')
+	g = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='lightblue', label='User updated and correct')
+	h = matplotlib.patches.Circle((0.5, 0.5), radius = 0.25,color='darkblue', label='User updated and incorrect')
 	
 
 	plt.legend(handles=[a,b,c,d,e,f,g,h], prop={'size': 8}, loc="lower center", bbox_to_anchor=(0.5, -0.5), ncol=2, handler_map={matplotlib.patches.Circle: HandlerEllipse()})
 
 	fig.subplots_adjust(bottom=0.3)
 
-	print(experiment_id.split("-")[1], trends["moving_user_acc"])
-	print(experiment_id.split("-")[1], trends["moving_model_acc"])
+	#print(experiment_id.split("-")[1], trends["moving_user_acc"])
+	#print(experiment_id.split("-")[1], trends["moving_model_acc"])
 	#user
 	arr = [[i, np.average(trends["moving_user_acc"][i-4:i+1], weights=[0.1,0.2,0.3,0.4,0.5])] for i in range(5, 31)]
 	data_user = np.array(arr)
@@ -150,35 +154,40 @@ for experiment_id in experiment_ids:
 	data_AI = np.array(arr)
 	ax.plot([i[0] for i in arr],[i[1] for i in arr], '-', color="green", picker=True)
 	agree = [True if (experiment[i]["model_prediction"] == experiment[i]["user_prediction"]) else False for i in range(5,31)]
+	"""
 	for index,(xy, color) in enumerate(zip(data_AI, agree)):
 		if(color == False and trends["moving_model_acc"][index+5] == 1):
 			ax.plot(xy[0],xy[1], 'o', color="green", picker=True)
 		elif(color == False and trends["moving_model_acc"][index+5] == 0):
 			ax.plot(xy[0],xy[1], 'o', color="red", picker=True)
-
+	"""
 	#model test
-	arr = [[i, trends["moving_model_test_acc_0"][i]] for i in range(1, 1+len(trends["moving_model_test_acc_0"].keys()))]
+	arr = [[i-1, trends["moving_model_test_acc_0"][i]] for i in range(1, 31)]
 	data_AI_test = np.array(arr)
 
 	ax.plot([i[0] for i in arr],[i[1] for i in arr], '-', color="orange", picker=True)
-	colors = [False if (experiment[i]["user_update"] == 0) else True for i in range(1,1+len(trends["moving_model_test_acc_0"].keys()))]
-	for index,(xy, color) in enumerate(zip(data_AI_test, agree)):
-		if(color == True and trends["moving_model_acc"][index+1] == 1):
-			ax.plot(xy[0],xy[1], 'o', color="lightblue", picker=True)
-		elif(color == True and trends["moving_model_acc"][index+1] == 0):
-			ax.plot(xy[0],xy[1], 'o', color="darkblue", picker=True)
+	colors = [True if (int(experiment[i]["user_update"]) == 1) else False for i in range(1,1+len(trends["moving_model_test_acc_0"].keys()))]
+	for index,(xy, color) in enumerate(zip(data_AI_test, colors)):
+		#print(index, color, "-",experiment[index+1]["user_update"],"-",int(experiment[i]["user_update"]))
+		if(index > 0 and color == True and "No Updates" not in version and "/0-" in experiment[index+1]["patient_filename"]):
+			if(trends["moving_model_acc"][index+1] == 1):
+				ax.plot(xy[0],xy[1], 'o', color="lightblue", picker=True)
+			else:
+				ax.plot(xy[0],xy[1], 'o', color="darkblue", picker=True)
 
 	#model test
-	arr = [[i, trends["moving_model_test_acc_1"][i]] for i in range(1, 1+len(trends["moving_model_test_acc_1"].keys()))]
+	arr = [[i-1, trends["moving_model_test_acc_1"][i]] for i in range(1, 31)]
 	data_AI_test = np.array(arr)
 
 	ax.plot([i[0] for i in arr],[i[1] for i in arr], '-', color="purple", picker=True)
-	colors = [False if (experiment[i]["user_update"] == 0) else True for i in range(1,1+len(trends["moving_model_test_acc_1"].keys()))]
-	for index,(xy, color) in enumerate(zip(data_AI_test, agree)):
-		if(color == True and trends["moving_model_acc"][index+1] == 1):
-			ax.plot(xy[0],xy[1], 'o', color="lightblue", picker=True)
-		elif(color == True and trends["moving_model_acc"][index+1] == 0):
-			ax.plot(xy[0],xy[1], 'o', color="darkblue", picker=True)
+	colors = [True if (int(experiment[i]["user_update"]) == 1) else False for i in range(1,1+len(trends["moving_model_test_acc_1"].keys()))]
+	for index,(xy, color) in enumerate(zip(data_AI_test, colors)):
+		#print(index, color, "-",experiment[index+1]["user_update"],"-",int(experiment[i]["user_update"]))
+		if(index > 0 and color == True and "No Updates" not in version and "/1-" in experiment[index+1]["patient_filename"]):
+			if(trends["moving_model_acc"][index+1] == 1):
+				ax.plot(xy[0],xy[1], 'o', color="lightblue", picker=True)
+			else:
+				ax.plot(xy[0],xy[1], 'o', color="darkblue", picker=True)
 
 
 	plt.savefig("P"+experiment_id.split("-")[1]+".png")
