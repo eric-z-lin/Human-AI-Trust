@@ -16,6 +16,7 @@ from datetime import datetime as dt
 
 CONST_BATCH_UPDATE_FREQUENCY = 5
 MAX_TRIALS = 30
+ACTIVE_LEARNING_THRESHOLD = 75
 
 
 
@@ -29,6 +30,7 @@ def index(request):
 
 		ml_model = experiment.field_model_ml_model
 		update_type = experiment.field_ml_model_update_type
+		calibration_type = experiment.field_ml_model_calibration
 
 		# Get patient case
 		generated_patient = experiment.generate_patient()
@@ -42,8 +44,23 @@ def index(request):
 		
 		arr = ml_model.model_prediction(generated_patient)
 		model_prediction = arr[0]
-		model_confidence = round(arr[1]*100, 1)
+		model_display_confidence = round(arr[1]*100, 1)
+		model_actual_confidence = arr[3]
 		ground_truth = arr[2]
+
+		display_update = -1 
+		if calibration_type == 3:
+			display_update = 0
+		elif(update_type == 1 or update_type == 2):
+			display_update = 1
+		elif(update_type == 0):
+			display_update = 0
+		elif(update_type == 3):
+			if(model_display_confidence < ACTIVE_LEARNING_THRESHOLD):
+				# Active learning displays update uption if confidence below threshold
+				display_update = 1
+			else:
+				display_update = 0
 
 		# Table for patient case
 		domain = ml_model.domain
@@ -57,7 +74,8 @@ def index(request):
 			"field_ml_accuracy":  json.dumps(ml_model.accuracy_field),
 			"field_ml_calibration": json.dumps(ml_model.calibration_field),
 			"field_ml_prediction": model_prediction,
-			"field_ml_confidence": model_confidence,
+			"field_ml_display_confidence": model_display_confidence,
+			"field_ml_actual_confidence": model_actual_confidence,
 			"field_instance_ground_truth": ground_truth,
 			"field_user_prediction": None,
 			"field_user_did_update": None,
@@ -70,6 +88,8 @@ def index(request):
 		new_user_response = ModelUserResponse(
 								field_data_point_string= initUserResponse["field_data_point_string"],
 								field_ml_accuracy = initUserResponse["field_ml_accuracy"],
+								field_ml_display_confidence = initUserResponse["field_ml_display_confidence"],
+								field_ml_actual_confidence = initUserResponse["field_ml_actual_confidence"],
 								field_ml_calibration = initUserResponse["field_ml_calibration"],
 								field_ml_prediction = initUserResponse["field_ml_prediction"],
 								field_instance_ground_truth = initUserResponse["field_instance_ground_truth"],
@@ -118,6 +138,8 @@ def index(request):
 		    'ground_truth': new_user_response.field_instance_ground_truth,
 		    'patient_img': patient_img,
 		    'update_type': update_type,
+		    'display_update': display_update,
+		    'calibration_type': calibration_type,
 		}
 
 		# Render the HTML template index.html with the data in the context variable
@@ -133,18 +155,20 @@ class InitExperimentForm(forms.Form):
 	# )
 	# field_ml_model_accuracy = forms.ChoiceField(choices = ACCURACY_CHOICES)
 
-	#0: Poor calibration, 1: Good calibration, 2: No confidence displayed
+	#0: Poor calibration, 1: Good calibration, 2: No confidence displayed, 3: No AI
 	CALIBRATION_CHOICES =( 
 		(0, "Pizza"),
 		(1, "Bagel"),
-		(2, "Pho")
+		(2, "Pho"),
+		(3, "Pasta")
 	)
 	field_ml_model_calibration = forms.ChoiceField(choices = CALIBRATION_CHOICES)
 	#0: Control/no update, 1: instant update, 2: batched update, 3: active learning
 	UPDATE_TYPE_CHOICES =( 
 		(0, "Rome"),
 		(1, "Geneva"),
-		(2, "London")
+		(2, "London"),
+		(3, "New York")
 	)
 	field_ml_model_update_type = forms.ChoiceField(choices = UPDATE_TYPE_CHOICES)
 
@@ -227,12 +251,12 @@ class IntervalForm(forms.Form):
 		widget = forms.RadioSelect
 	)
 	field_perceived_accuracy = forms.ChoiceField(
-		label = "How strongly do you agree: The AI is as good as a highly competent person in diagnosing patients.",
+		label = "How strongly do you agree: The AI understands what type of patients the AI has trouble diagnosing.",
 		choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
 	field_confidence_calibration = forms.ChoiceField(
-		label = "How strongly do you agree: I understand when the AI is certain in its prediction.",
+		label = "How strongly do you agree: I understand what types of patients the AI has trouble diagnosing.",
 		choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
@@ -244,6 +268,16 @@ class IntervalForm(forms.Form):
 	field_AI_confidence = forms.ChoiceField(
 		label = "How strongly do you agree: The AI boosts my confidence in my ultimate diagnosis.",
 		choices = ModelUserResponse.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect
+	)
+	field_simple_trust = forms.ChoiceField(
+		label = "How strongly do you agree: I am confident in the AI diagnosing patients without my input.",
+		choices = ModelUserRespones.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect
+	)
+	field_reflective_trust = forms.ChoiceField(
+		label = "How strongly do you agree: I trust the thought process the AI system uses in computing a prediction (not necessarily agreeing with every prediction it makes).",
+		choices = ModelUserRespones.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
 
@@ -311,6 +345,8 @@ def patient_result(request):
 			user_response.field_user_calibration = form.cleaned_data['field_confidence_calibration']
 			user_response.field_user_personal_confidence = form.cleaned_data['field_personal_confidence']
 			user_response.field_user_AI_confidence = form.cleaned_data['field_AI_confidence']
+			user_response.field_user_simple_trust = form.cleaned_data['field_simple_trust']
+			user_response.field_user_reflective_trust = form.cleaned_data['field_reflective_trust']
 
 			user_response.field_user_prediction = ml_prediction
 	else:
@@ -458,6 +494,8 @@ def write_to_csv(user_response, full_questions):
 		user_response.field_experiment.field_patient_number, user_response.field_data_point_string,
 		user_response.field_ml_accuracy,
 		user_response.field_ml_calibration,
+		user_response.field_ml_display_confidence,
+		user_response.field_ml_actual_confidence,
 		user_response.field_ml_prediction,
 		user_response.field_instance_ground_truth, user_response.field_user_prediction,
 		user_response.field_user_did_update,
@@ -476,8 +514,8 @@ def write_to_csv(user_response, full_questions):
 	with open('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv','a') as f:
 		writer = csv.writer(f)
 		if(not file_created):
-			writer.writerow(["patient_num", "patient_filename","accuracy", "calibration",
-				"model_prediction", "ground_truth", "user_prediction", "user_update",
+			writer.writerow(["patient_num", "patient_filename","accuracy", "calibration", "display_confidence",
+				"actual_confidence", "model_prediction", "ground_truth", "user_prediction", "user_update",
 				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
 				"question_personal_conf","question_model_conf","time_passed","time_stamp","user_name"])
 		writer.writerow(fields)

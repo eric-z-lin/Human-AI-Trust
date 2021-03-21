@@ -36,7 +36,7 @@
 									<div id="buttonDiv" class = "align-self-center" style="width:100%;">
 										AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_model_prediction }}</span>
 										<br>
-										AI's confidence: <span id="ai-prediction" style="color: blue;">{{ ml_confidence }}</span>
+										AI's confidence: <span id="ai-confidence" style="color: blue;">{{ ml_confidence }}</span>
 										<br>
 										Your diagnosis: <span id="user-diagnosis"> </span> <br>
 										 <!-- <form method="POST">
@@ -197,9 +197,23 @@
 			document.getElementById("positive-button").addEventListener("click", function (d) {
 				document.getElementById("user-diagnosis").innerHTML = "Positive";
 			});
+			// Show and hide AI recommendation based on calibration type
+			let model_calibration_type = "{{calibration_type}}";
+			if (model_calibration_type === "3") {
+				// No AI
+				// Hide AI prediction and confidence
+				document.getElementById('ai-prediction').style.display = "none";
+				document.getElementById('ai-confidence').style.display = "none";
+			}
+			else {
+				// Show AI prediction and confidence
+				document.getElementById('ai-prediction').style.display = "block";
+				document.getElementById('ai-confidence').style.display = "block";
+			}
+
 			// Show and hide button based on model update type
-			let model_update_type = "{{update_type}}";
-			if (model_update_type === "0") {
+			let model_display_update = "{{display_update}}"; // 1 if update button should be shown; 0 o/w
+			if (model_display_update === "0") {
 				// Hide all yes-update-option buttons
 				document.getElementById('btn-yes-update-option-1').style.display = "none";
 				document.getElementById('btn-yes-update-option-2').style.display = "none";
