@@ -34,9 +34,11 @@
 						<!-- Diagnose-->
 								<div class = "row justify-content-center" style="width: 100%; padding: 2vh;">
 									<div id="buttonDiv" class = "align-self-center" style="width:100%;">
+										<div id="show-ai">
 										AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_model_prediction }}</span>
 										<br>
 										AI's confidence: <span id="ai-confidence" style="color: blue;">{{ ml_confidence }}</span>
+										</div>
 										<br>
 										Your diagnosis: <span id="user-diagnosis"> </span> <br>
 										 <!-- <form method="POST">
@@ -121,8 +123,8 @@
 															<b>Information</b>:
 															For each patient, you will see their chest X-Ray. Note: no prior knowledge of medicine is needed nor expected for these tasks. You might notice that the images get harder as time goes on, which may lead to a lower performance of the AI. <br>
 
-															<b>AI</b>:
-															You will have the help of an AI tool that predicts whether each patient is positive or negative for NOVID-20. You can either choose to go with the AI’s prediction or manually override and select the other diagnosis. <br>
+															<!-- <b>AI</b>:
+															You may have the help of an AI tool that predicts whether each patient is positive or negative for NOVID-20. You can either choose to go with the AI’s prediction or manually override and select the other diagnosis. <br> -->
 
 
 															<b>Points</b>:
@@ -202,15 +204,12 @@
 			if (model_calibration_type === "3") {
 				// No AI
 				// Hide AI prediction and confidence
-				document.getElementById('ai-prediction').style.display = "none";
-				document.getElementById('ai-confidence').style.display = "none";
+				document.getElementById('show-ai').style.display = "none";
 			}
 			else {
 				// Show AI prediction and confidence
-				document.getElementById('ai-prediction').style.display = "block";
-				document.getElementById('ai-confidence').style.display = "block";
+				document.getElementById('show-ai').style.display = "block";
 			}
-
 			// Show and hide button based on model update type
 			let model_display_update = "{{display_update}}"; // 1 if update button should be shown; 0 o/w
 			if (model_display_update === "0") {

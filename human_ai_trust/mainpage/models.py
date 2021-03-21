@@ -328,7 +328,7 @@ class ModelExperiment(models.Model):
 
 	# Fields
 	# 0 or 1
-	field_ml_model_calibration = models.IntegerField(help_text="0: Poor calibration, 1: Good calibration, 2: No confidence displayed")
+	field_ml_model_calibration = models.IntegerField(help_text="0: Poor calibration, 1: Good calibration, 2: No confidence displayed, 3: No AI")
 	# 0, 1, 2, or 3
 	field_ml_model_update_type = models.IntegerField(help_text="0: Control/no update, 1: instant update, 2: batched update, 3: active learning")
 
@@ -425,7 +425,9 @@ class ModelUserResponse(models.Model):
 	field_user_calibration = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence calibration')
 	field_user_personal_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
-				default=3, help_text='Measure of confidence user in their own mental model')
+				default=3, help_text='Measure of confidence user in their own diagnosis ability')
+	field_user_noAI_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of confidence user has in no AI lever')
 	field_user_AI_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence / trust in AI')
 	field_user_simple_trust = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 

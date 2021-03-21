@@ -124,7 +124,7 @@ def index(request):
 		context = {
 		    # 'feature_dict': feature_dict,
 		    'ml_model_prediction': ('Negative' if model_prediction == 0 else 'Positive'),
-		    'ml_confidence': str(model_confidence) + "%",
+		    'ml_confidence': str(model_display_confidence) + "%",
 		    'feature_display_dict': feature_display_dict,
 		    'user_response': new_user_response,
 		    'form1': trustForm,
@@ -272,12 +272,12 @@ class IntervalForm(forms.Form):
 	)
 	field_simple_trust = forms.ChoiceField(
 		label = "How strongly do you agree: I am confident in the AI diagnosing patients without my input.",
-		choices = ModelUserRespones.USER_TRUST_RESPONSES,
+                choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
 	field_reflective_trust = forms.ChoiceField(
 		label = "How strongly do you agree: I trust the thought process the AI system uses in computing a prediction (not necessarily agreeing with every prediction it makes).",
-		choices = ModelUserRespones.USER_TRUST_RESPONSES,
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
 
@@ -287,6 +287,14 @@ class ConstantForm(forms.Form):
 		label = "How would you describe your relationship with the AI?",
 		choices = ModelUserResponse.USER_RELATIONSHIP_RESPONSES,
 		widget = forms.RadioSelect
+	)
+
+# Ask every time step for no AI lever (calibration = 3)
+class NoAIForm(forms.Form):
+	field_noAI_confidence = forms.ChoiceField(
+		label = "How strongly do you agree: I am confident in my ability to diagnose patients.",
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
+		widget = forms.RadioSelect 
 	)
 	
 
@@ -302,6 +310,7 @@ def patient_result(request):
 	experiment = user_response.field_experiment
 	ml_model = experiment.field_model_ml_model
 	update_type = experiment.field_ml_model_update_type
+	calibration_type = experiment.field_ml_model_calibration
 
 
 	# Table for patient case
@@ -331,33 +340,42 @@ def patient_result(request):
 	full_questions = 0
 
 	# Create a form instance with the submitted data
-	form = ConstantForm(request.POST)
-	if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
-		full_questions = 1
-		form = IntervalForm(request.POST)  # 2
-		# Validate the form
+	form = NoAIForm(request.POST)
+	if calibration_type == 3:
+		# If no AI
+		form = NoAIForm(request.POST)
 		print('checking validity')
-		if form.is_valid(): 
-
-			# Instantiate models
-			user_response.field_user_relationship = form.cleaned_data['field_relationship']
-			user_response.field_user_perceived_accuracy = form.cleaned_data['field_perceived_accuracy']
-			user_response.field_user_calibration = form.cleaned_data['field_confidence_calibration']
-			user_response.field_user_personal_confidence = form.cleaned_data['field_personal_confidence']
-			user_response.field_user_AI_confidence = form.cleaned_data['field_AI_confidence']
-			user_response.field_user_simple_trust = form.cleaned_data['field_simple_trust']
-			user_response.field_user_reflective_trust = form.cleaned_data['field_reflective_trust']
-
-			user_response.field_user_prediction = ml_prediction
+			if form.is_valid(): 
+				# Instantiate models
+				user_response.field_user_noAI_confidence = form.cleaned_data['field_noAI_confidence']
+				user_response.field_user_prediction = ml_prediction
 	else:
-		form = ConstantForm(request.POST)
-		# Validate the form
-		print('checking validity')
-		if form.is_valid(): 
+		if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
+			full_questions = 1
+			form = IntervalForm(request.POST)  # 2
+			# Validate the form
+			print('checking validity')
+			if form.is_valid(): 
 
-			# Instantiate models
-			user_response.field_user_relationship = form.cleaned_data['field_relationship']
-			user_response.field_user_prediction = ml_prediction
+				# Instantiate models
+				user_response.field_user_relationship = form.cleaned_data['field_relationship']
+				user_response.field_user_perceived_accuracy = form.cleaned_data['field_perceived_accuracy']
+				user_response.field_user_calibration = form.cleaned_data['field_confidence_calibration']
+				user_response.field_user_personal_confidence = form.cleaned_data['field_personal_confidence']
+				user_response.field_user_AI_confidence = form.cleaned_data['field_AI_confidence']
+				user_response.field_user_simple_trust = form.cleaned_data['field_simple_trust']
+				user_response.field_user_reflective_trust = form.cleaned_data['field_reflective_trust']
+
+				user_response.field_user_prediction = ml_prediction
+		else:
+			form = ConstantForm(request.POST)
+			# Validate the form
+			print('checking validity')
+			if form.is_valid(): 
+
+				# Instantiate models
+				user_response.field_user_relationship = form.cleaned_data['field_relationship']
+				user_response.field_user_prediction = ml_prediction
 
 
 	# Check which button got pressed
