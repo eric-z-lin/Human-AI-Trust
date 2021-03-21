@@ -345,10 +345,10 @@ def patient_result(request):
 		# If no AI
 		form = NoAIForm(request.POST)
 		print('checking validity')
-			if form.is_valid(): 
-				# Instantiate models
-				user_response.field_user_noAI_confidence = form.cleaned_data['field_noAI_confidence']
-				user_response.field_user_prediction = ml_prediction
+		if form.is_valid(): 
+			# Instantiate models
+			user_response.field_user_noAI_confidence = form.cleaned_data['field_noAI_confidence']
+			user_response.field_user_prediction = ml_prediction
 	else:
 		if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
 			full_questions = 1
