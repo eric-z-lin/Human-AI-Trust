@@ -319,7 +319,7 @@ class ModelMLModel(models.Model):
 
 		confidence = list(np.random.normal(model_conf, calibration[str(case)], 1))[0]
 		confidence = min(max(confidence, 0.5000),1.0)
-		return [prediction, confidence, gt]
+		return [prediction, confidence, gt, model_conf]
 
 class ModelExperiment(models.Model):
 	"""A typical class defining a model, derived from the Model class."""
@@ -428,6 +428,11 @@ class ModelUserResponse(models.Model):
 				default=3, help_text='Measure of confidence user in their own mental model')
 	field_user_AI_confidence = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
 				default=3, help_text='Measure of confidence / trust in AI')
+	field_user_simple_trust = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of simple trust in AI')
+	field_user_reflective_trust = models.IntegerField(null=True, choices=USER_TRUST_RESPONSES, blank=True, 
+				default=3, help_text='Measure of reflective trust in AI')
+
 	field_user_start_time = models.IntegerField(null=True, help_text='Start epoch time')
 	field_user_end_time = models.IntegerField(null=True, help_text='End epoch time')
 
@@ -439,7 +444,8 @@ class ModelUserResponse(models.Model):
 	field_ml_accuracy = models.TextField(blank=True, null=True, default='{}', help_text="ML accuracy at time of question -- json dict")
 	field_ml_calibration = models.TextField(blank=True, null=True, default='{}', help_text="ML calibration at time of question -- json dict")
 	field_ml_prediction = models.IntegerField(null=True, help_text="Actual ML prediction")
-	field_ml_confidence = models.DecimalField(null=True, help_text="Actual ML confidence", decimal_places=5, max_digits=10)
+	field_ml_actual_confidence = models.DecimalField(null=True, help_text="Actual ML confidence", decimal_places=5, max_digits=10)
+	field_ml_display_confidence = models.DecimalField(null=True, help_text="Displayed ML confidence", decimal_places=5, max_digits=10)
 	field_instance_ground_truth = models.IntegerField(null=True, help_text="Ground truth label")
 
 	field_user_prediction = models.IntegerField(null=True, help_text="User prediction")
@@ -467,5 +473,3 @@ class ModelUserResponse(models.Model):
 	def __str__(self):
 		"""String for representing the MyModelName object (in Admin site etc.)."""
 		return self.field_experiment
-
-

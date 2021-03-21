@@ -2,119 +2,120 @@
 
 {% block content %}
 {% load static %}
-  <div class="container-fluid" style="height: 100vh; padding-top: 1vh">
-    <div class="row">
-      <div class="col-10 offset-1" style="border: thin solid grey; border-radius: 10px;">
+	<div class="container-fluid" style="height: 100vh; padding-top: 1vh">
+		<div class="row">
+			<div class="col-10 offset-1" style="border: thin solid grey; border-radius: 10px;">
 
-        <!-- HEADING -->
-        <div class="row d-flex justify-content-center" style="height: 10vh; padding: 0; background: lightskyblue; border-radius: 10px;">
-          <div class="align-self-center">
-            <h1>Human-AI Team Diagnosis</h1>
-          </div>
-        </div>
+				<!-- HEADING -->
+				<div class="row d-flex justify-content-center" style="height: 10vh; padding: 0; background: lightskyblue; border-radius: 10px;">
+					<div class="align-self-center">
+						<h1>Human-AI Team Diagnosis</h1>
+					</div>
+				</div>
 
-        <!-- CONTENT -->
-        <div class="row" style="height: 70vh; background: #c7e6f7; padding: 0; border-radius: 10px;">
+				<!-- CONTENT -->
+				<div class="row" style="height: 70vh; background: #c7e6f7; padding: 0; border-radius: 10px;">
 
-          <!-- LEFT -->
-          <div class="col-7">
+					<!-- LEFT -->
+					<div class="col-7">
 
-            <div class="row" style="background: #c7e6f7; padding: 2vh;">
-              <div id="task" style="height: 100%; width:100%; background: #c7e6f7;">
-                <h2>Patient X-Ray</h2>
-                <!-- <ul>
-                  {% for key, value in feature_display_dict.items %}
-                    <li><b>{{key}}</b>: {{value}}</li>
-                  {% endfor %}
-                </ul> -->
-                <img src="{{patient_img}}">
-              </div>
-            </div>
+						<div class="row" style="background: #c7e6f7; padding: 2vh;">
+							<div id="task" style="height: 100%; width:100%; background: #c7e6f7;">
+								<h2>Patient X-Ray</h2>
+								<!-- <ul>
+									{% for key, value in feature_display_dict.items %}
+										<li><b>{{key}}</b>: {{value}}</li>
+									{% endfor %}
+								</ul> -->
+								<img src="{{patient_img}}">
+							</div>
+						</div>
 
-            <!-- Diagnose-->
-                <div class = "row justify-content-center" style="width: 100%; padding: 2vh;">
-                  <div id="buttonDiv" class = "align-self-center" style="width:100%;">
-                    AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_model_prediction }}</span>
-                    <br>
-                    AI's confidence: <span id="ai-prediction" style="color: blue;">{{ ml_confidence }}</span>
-                    <br>
-                    Your diagnosis: <span id="user-diagnosis"> </span> <br>
-                     <!-- <form method="POST">
-                        {% csrf_token %} -->
-                      <button type="submit" class="btn btn-success" id="positive-button" data-toggle="modal" data-target="#agreeModal">Positive</button>
-                      <button type="submit" class="btn btn-danger" id="negative-button" data-toggle="modal" data-target="#agreeModal">Negative</button>
-                    <!-- </form> -->
-                    <!-- Button for update -->
+						<!-- Diagnose-->
+								<div class = "row justify-content-center" style="width: 100%; padding: 2vh;">
+									<div id="buttonDiv" class = "align-self-center" style="width:100%;">
+										AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_model_prediction }}</span>
+										<br>
+										AI's confidence: <span id="ai-confidence" style="color: blue;">{{ ml_confidence }}</span>
+										<br>
+										Your diagnosis: <span id="user-diagnosis"> </span> <br>
+										 <!-- <form method="POST">
+												{% csrf_token %} -->
+											<button type="submit" class="btn btn-success" id="positive-button" data-toggle="modal" data-target="#agreeModal">Positive</button>
+											<button type="submit" class="btn btn-danger" id="negative-button" data-toggle="modal" data-target="#agreeModal">Negative</button>
+										<!-- </form> -->
+										<!-- Button for update -->
 
-                    <!-- Modal when they agree -->
-                    <div class="modal fade" id="agreeModal" tabindex="-1" role="dialog" aria-labelledby="agreeModalLabel" aria-hidden="true">
-                      <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="agreeModalLabel">Trust in AI</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                          </div>
-                          <form action="{% url 'patient_result' %}" method="POST">
-                            {% csrf_token %}
-                            <div class="modal-body">
-                              {{ correctForm.as_p }}
-                            </div>
-                            <div class="modal-footer">
-                              <p style="color:gray; font-size: 12px;" id="update-explanation-1"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
-                              <button type="submit" class="btn btn-secondary" value="agree-no-update" name="agree-no-update" id="btn-yes-update-option-1">Don't Update</button>
-                              <button type="submit" class="btn btn-primary" value="agree-update" name="agree-update" id="btn-yes-update-option-2">Update</button>
-                              <button type="submit" class="btn btn-primary" value="agree-no-update" name="agree-no-update" id="btn-no-update-option-1">Next patient</button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
+										<!-- Modal when they agree -->
+										<div class="modal fade" id="agreeModal" tabindex="-1" role="dialog" aria-labelledby="agreeModalLabel" aria-hidden="true">
+											<div class="modal-dialog" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+														<h5 class="modal-title" id="agreeModalLabel">Trust in AI</h5>
+														<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</button>
+													</div>
+													<form action="{% url 'patient_result' %}" method="POST">
+														{% csrf_token %}
+														<div class="modal-body">
+															{{ correctForm.as_p }}
+														</div>
+														<div class="modal-footer">
+															<p style="color:gray; font-size: 12px;" id="update-explanation-1"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
+															<button type="submit" class="btn btn-secondary" value="agree-no-update" name="agree-no-update" id="btn-yes-update-option-1">Don't Update</button>
+															<button type="submit" class="btn btn-primary" value="agree-update" name="agree-update" id="btn-yes-update-option-2">Update</button>
+															<button type="submit" class="btn btn-primary" value="agree-no-update" name="agree-no-update" id="btn-no-update-option-1">Next patient</button>
+														</div>
+													</form>
+												</div>
+											</div>
+										</div>
 
-                    <!-- Modal when they disagree -->
-                    <div class="modal fade" id="disagreeModal" tabindex="-1" role="dialog" aria-labelledby="disagreeModalLabel" aria-hidden="true">
-                      <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="disagreeModalLabel">Trust in AI</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                          </div>
-                          <form action="{% url 'patient_result' %}" method="POST">
-                            {% csrf_token %}
-                            <div class="modal-body">
-                              {{ correctForm.as_p }}                              
-                            </div>
-                            <div class="modal-footer">
-                              <p style="color:gray; font-size: 12px;" id="update-explanation-2"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
-                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-yes-update-option-3">Don't Update</button>
-                              <button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update" id="btn-yes-update-option-4">Update AI</button>
-                              <button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-no-update-option-2">Next Patient</button>
-                            </div>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-          </div>
+										<!-- Modal when they disagree -->
+										<div class="modal fade" id="disagreeModal" tabindex="-1" role="dialog" aria-labelledby="disagreeModalLabel" aria-hidden="true">
+											<div class="modal-dialog" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+														<h5 class="modal-title" id="disagreeModalLabel">Trust in AI</h5>
+														<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+															<span aria-hidden="true">&times;</span>
+														</button>
+													</div>
+													<form action="{% url 'patient_result' %}" method="POST">
+														{% csrf_token %}
+														<div class="modal-body">
+															{{ correctForm.as_p }}                              
+														</div>
+														<div class="modal-footer">
+															<p style="color:gray; font-size: 12px;" id="update-explanation-2"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
+															<button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-yes-update-option-3">Don't Update</button>
+															<button type="submit" class="btn btn-primary" value="disagree-update" name="disagree-update" id="btn-yes-update-option-4">Update AI</button>
+															<button type="submit" class="btn btn-secondary" value="disagree-no-update" name="disagree-no-update" id="btn-no-update-option-2">Next Patient</button>
+														</div>
+													</form>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+					</div>
 
-          <!-- RIGHT -->
-          <div class="col-5">
-            <div class="row" style="height: 15%; background: #c7e6f7; padding-left: 2vh; padding-bottom: 1vh; padding-right: 1vh; padding-top: 1vh">
-                  <!-- View Directions -->
-                   <button class="btn btn-info" data-toggle="modal" data-target="#directionsModal">View Directions</button>
-                  <div class="modal fade" id="directionsModal" tabindex="-1" role="dialog" aria-labelledby="agreeModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title" id="directionsModalLabel">Directions</h5>
-                          </div>
+					<!-- RIGHT -->
+					<div class="col-5">
+						<div class="row" style="height: 15%; background: #c7e6f7; padding-left: 2vh; padding-bottom: 1vh; padding-right: 1vh; padding-top: 1vh">
+									<!-- View Directions -->
+									 <button class="btn btn-info" data-toggle="modal" data-target="#directionsModal">View Directions</button>
+									<div class="modal fade" id="directionsModal" tabindex="-1" role="dialog" aria-labelledby="agreeModalLabel" aria-hidden="true">
+										<div class="modal-dialog" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+														<h5 class="modal-title" id="directionsModalLabel">Directions</h5>
+													</div>
 
-                          <p> 
-                          <b>Objective</b>:
+													<p> 
+
+															<b>Objective</b>:
 															You will see a series of patients and the objective is to diagnose them with a mysterious new illness called NOVID-20 as either (1) positive or (2) negative. NOVID-20 is a life-threatening disease, misdiagnosis would be really bad for the patient. <br>
 
 															<b>Information</b>:
@@ -127,101 +128,115 @@
 															<b>Points</b>:
 															Every time you diagnose a patient, you will be told whether your decision was right or wrong and how many points you gained. Your objective is to maximize the number of points you have at the end. For every correct diagnosis, you gain 20 points and for every incorrect diagnosis, you lose 40 points.
 															<br>
-			  </p>
-                        </div>
-                      </div>
-                  </div>
-            </div>
-            <div class="row justify-content-center" style="height: 85%; width: 100%; background: #c7e6f7; padding-left: 1vh; padding-bottom: 2vh; padding-right: 1vh; padding-top: 0vh">
-              <div class="col-12" style="width: 100%;">
-                
-                <!-- Score -->
-                <div class = "row justify-content-center" style="height: 50%;">
-                  <div id="scoreDiv" class = "align-self-center" style="height:100%; width:100%">
-                    <p> Name: {{name}}</p>
-                    <h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
-                    <p> You are diagnosing patient number <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }}.</p>
-                    <span style="color: blue;" > Please note that each diagnosis should take AT MOST 1 minute. </span>
-                    <div class="progress">
-                      <div class="progress-bar progress-bar-info" role="progressbar"
-                      aria-valuenow="{{ percent_diagnosed }}" aria-valuemin="0" aria-valuemax="100" style="width:{{percent_diagnosed}}%">
-                        {{ percent_diagnosed }}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+												</p>
+												</div>
+											</div>
+									</div>
+						</div>
+						<div class="row justify-content-center" style="height: 85%; width: 100%; background: #c7e6f7; padding-left: 1vh; padding-bottom: 2vh; padding-right: 1vh; padding-top: 0vh">
+							<div class="col-12" style="width: 100%;">
+								
+								<!-- Score -->
+								<div class = "row justify-content-center" style="height: 50%;">
+									<div id="scoreDiv" class = "align-self-center" style="height:100%; width:100%">
+										<p> Name: {{name}}</p>
+										<h3> Current Score: <span id="score">{{ score }}</span> pts</h3>
+										<p> You are diagnosing patient number <span id="score">{{ patient_num }}</span> out of {{ MAX_TRIALS }}.</p>
+										<span style="color: blue;" > Please note that each diagnosis should take AT MOST 1 minute. </span>
+										<div class="progress">
+											<div class="progress-bar progress-bar-info" role="progressbar"
+											aria-valuenow="{{ percent_diagnosed }}" aria-valuemin="0" aria-valuemax="100" style="width:{{percent_diagnosed}}%">
+												{{ percent_diagnosed }}%
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 
-          </div>
+					</div>
 
-        </div>
+				</div>
 
-      </div>
-    </div>
+			</div>
+		</div>
 
-  </div>
+	</div>
 
-  <!-- <h1>Experiment Home</h1>
-  <p>Welcome to the Human AI Trust Experiment, an experience developed by <em>Kavya, Eric, and Jackson</em>!</p>
-  <h2>Dynamic content</h2>
-  <p>The database has the following record count: {{ num_responses }}</p>
-    
-    {% for response in user_responses %}
-    <ul>
-      <li>{{ response.field_data_point_string }}</li>
-      <li>{{ response.field_ml_accuracy }}</li>
-      <li>{{ response.field_ml_confidence }}</li>
-      <li>{{ response.field_ml_prediction }}</li>
-      <li>{{ response.field_user_prediction }}</li>
-      <li>{{ response.field_user_did_update }}</li>
-      <li>{{ response.field_user_disagree_reason_choices }}</li>
-      <li>{{ response.field_user_disagree_reason_freetext }}</li>
-    </ul>
-    {% endfor %} -->
+	<!-- <h1>Experiment Home</h1>
+	<p>Welcome to the Human AI Trust Experiment, an experience developed by <em>Kavya, Eric, and Jackson</em>!</p>
+	<h2>Dynamic content</h2>
+	<p>The database has the following record count: {{ num_responses }}</p>
+		
+		{% for response in user_responses %}
+		<ul>
+			<li>{{ response.field_data_point_string }}</li>
+			<li>{{ response.field_ml_accuracy }}</li>
+			<li>{{ response.field_ml_confidence }}</li>
+			<li>{{ response.field_ml_prediction }}</li>
+			<li>{{ response.field_user_prediction }}</li>
+			<li>{{ response.field_user_did_update }}</li>
+			<li>{{ response.field_user_disagree_reason_choices }}</li>
+			<li>{{ response.field_user_disagree_reason_freetext }}</li>
+		</ul>
+		{% endfor %} -->
 
-    <script>
-      // Mapping button to correct modal
-      let prediction = document.getElementById('ai-prediction');
-      if (prediction.innerHTML === 'Positive') {
-        document.getElementById('negative-button').setAttribute("data-target", "#disagreeModal");
-      }
-      else {
-        document.getElementById('positive-button').setAttribute("data-target", "#disagreeModal");
-      }
-      // Storing clicked button in secret field
-      document.getElementById("negative-button").addEventListener("click", function (d) {
-        document.getElementById("user-diagnosis").innerHTML = "Negative";
-      });
-      document.getElementById("positive-button").addEventListener("click", function (d) {
-        document.getElementById("user-diagnosis").innerHTML = "Positive";
-      });
-      // Show and hide button based on model update type
-      let model_update_type = "{{update_type}}";
-      if (model_update_type === "0") {
-        // Hide all yes-update-option buttons
-        document.getElementById('btn-yes-update-option-1').style.display = "none";
-        document.getElementById('btn-yes-update-option-2').style.display = "none";
-        document.getElementById('btn-yes-update-option-3').style.display = "none";
-        document.getElementById('btn-yes-update-option-4').style.display = "none";
-        document.getElementById('update-explanation-1').style.display = "none";
-        document.getElementById('update-explanation-2').style.display = "none";
-        // Show all no-update-option buttons
-        document.getElementById('btn-no-update-option-1').style.display = "block";
-        document.getElementById('btn-no-update-option-2').style.display = "block";
-      }
-      else {
-        // Show all yes-update-option buttons
-        document.getElementById('btn-yes-update-option-1').style.display = "block";
-        document.getElementById('btn-yes-update-option-2').style.display = "block";
-        document.getElementById('btn-yes-update-option-3').style.display = "block";
-        document.getElementById('btn-yes-update-option-4').style.display = "block";
-        document.getElementById('update-explanation-1').style.display = "block";
-        document.getElementById('update-explanation-2').style.display = "block";
-        // Hide all no-update-option buttons
-        document.getElementById('btn-no-update-option-1').style.display = "none";
-        document.getElementById('btn-no-update-option-2').style.display = "none";
-      }
-    </script>
-  
+		<script>
+			// Mapping button to correct modal
+			let prediction = document.getElementById('ai-prediction');
+			if (prediction.innerHTML === 'Positive') {
+				document.getElementById('negative-button').setAttribute("data-target", "#disagreeModal");
+			}
+			else {
+				document.getElementById('positive-button').setAttribute("data-target", "#disagreeModal");
+			}
+			// Storing clicked button in secret field
+			document.getElementById("negative-button").addEventListener("click", function (d) {
+				document.getElementById("user-diagnosis").innerHTML = "Negative";
+			});
+			document.getElementById("positive-button").addEventListener("click", function (d) {
+				document.getElementById("user-diagnosis").innerHTML = "Positive";
+			});
+			// Show and hide AI recommendation based on calibration type
+			let model_calibration_type = "{{calibration_type}}";
+			if (model_calibration_type === "3") {
+				// No AI
+				// Hide AI prediction and confidence
+				document.getElementById('ai-prediction').style.display = "none";
+				document.getElementById('ai-confidence').style.display = "none";
+			}
+			else {
+				// Show AI prediction and confidence
+				document.getElementById('ai-prediction').style.display = "block";
+				document.getElementById('ai-confidence').style.display = "block";
+			}
+
+			// Show and hide button based on model update type
+			let model_display_update = "{{display_update}}"; // 1 if update button should be shown; 0 o/w
+			if (model_display_update === "0") {
+				// Hide all yes-update-option buttons
+				document.getElementById('btn-yes-update-option-1').style.display = "none";
+				document.getElementById('btn-yes-update-option-2').style.display = "none";
+				document.getElementById('btn-yes-update-option-3').style.display = "none";
+				document.getElementById('btn-yes-update-option-4').style.display = "none";
+				document.getElementById('update-explanation-1').style.display = "none";
+				document.getElementById('update-explanation-2').style.display = "none";
+				// Show all no-update-option buttons
+				document.getElementById('btn-no-update-option-1').style.display = "block";
+				document.getElementById('btn-no-update-option-2').style.display = "block";
+			}
+			else {
+				// Show all yes-update-option buttons
+				document.getElementById('btn-yes-update-option-1').style.display = "block";
+				document.getElementById('btn-yes-update-option-2').style.display = "block";
+				document.getElementById('btn-yes-update-option-3').style.display = "block";
+				document.getElementById('btn-yes-update-option-4').style.display = "block";
+				document.getElementById('update-explanation-1').style.display = "block";
+				document.getElementById('update-explanation-2').style.display = "block";
+				// Hide all no-update-option buttons
+				document.getElementById('btn-no-update-option-1').style.display = "none";
+				document.getElementById('btn-no-update-option-2').style.display = "none";
+			}
+		</script>
+	
 {% endblock %}
