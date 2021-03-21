@@ -112,11 +112,15 @@ def index(request):
 
 		trustForm = IntervalForm()
 		updateForm = ConstantForm()
+		noAIForm = NoAIForm()
 
 		correctForm = ConstantForm()
-		if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
-			print('intervalform')
-			correctForm = IntervalForm()
+		if calibration_type == 3:
+			correctForm = NoAIForm()
+		else:
+			if experiment.field_patient_number % (MAX_TRIALS // 10) == 0:
+				print('intervalform')
+				correctForm = IntervalForm()
 
 		patient_img = '/static/' + generated_patient.replace('./mainpage/', '')
 
@@ -129,6 +133,7 @@ def index(request):
 		    'user_response': new_user_response,
 		    'form1': trustForm,
 		    'form2': updateForm,
+		    'form3': noAIForm,
 		    'correctForm': correctForm,
 		    'score': experiment.field_score,
 		    'patient_num': experiment.field_patient_number,
