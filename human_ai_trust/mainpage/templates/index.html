@@ -37,7 +37,8 @@
 										<div id="show-ai">
 										AI's recommendation: <span id="ai-prediction" style="color: blue;">{{ ml_model_prediction }}</span>
 										<br>
-										AI's confidence: <span id="ai-confidence" style="color: blue;">{{ ml_confidence }}</span>
+										AI's confidence for {{ ml_model_prediction }}: <span id="ai-confidence" style="color: blue;">{{ ml_confidence }}</span>
+										AI's confidence for {{ ml_model_prediction_opposite }}: <span id="ai-confidence-opposite" style="color: blue;">{{ ml_confidence_opposite }}</span>
 										</div>
 										<br>
 										Your diagnosis: <span id="user-diagnosis"> </span> <br>
