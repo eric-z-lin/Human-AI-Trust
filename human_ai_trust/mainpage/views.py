@@ -129,6 +129,8 @@ def index(request):
 		    # 'feature_dict': feature_dict,
 		    'ml_model_prediction': ('Negative' if model_prediction == 0 else 'Positive'),
 		    'ml_confidence': str(model_display_confidence) + "%",
+		    'ml_model_prediction_opposite': ('Negative' if model_prediction == 1 else 'Positive'),
+		    'ml_confidence_opposite': str(100 - model_display_confidence) + "%",
 		    'feature_display_dict': feature_display_dict,
 		    'user_response': new_user_response,
 		    'form1': trustForm,
