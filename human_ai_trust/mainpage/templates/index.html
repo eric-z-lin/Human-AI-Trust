@@ -123,8 +123,10 @@
 															<b>Information</b>:
 															For each patient, you will see their chest X-Ray. Note: no prior knowledge of medicine is needed nor expected for these tasks. You might notice that the images get harder as time goes on, which may lead to a lower performance of the AI. <br>
 
-															<!-- <b>AI</b>:
-															You may have the help of an AI tool that predicts whether each patient is positive or negative for NOVID-20. You can either choose to go with the AI’s prediction or manually override and select the other diagnosis. <br> -->
+															<div id="directions-AI">
+																<b>AI</b>:
+																You may have the help of an AI tool that predicts whether each patient is positive or negative for NOVID-20. You can either choose to go with the AI’s prediction or manually override and select the other diagnosis. <br>
+															</div>
 
 
 															<b>Points</b>:
@@ -205,10 +207,14 @@
 				// No AI
 				// Hide AI prediction and confidence
 				document.getElementById('show-ai').style.display = "none";
+				// Hide AI directions
+				document.getElementById('directions-AI').style.display = "none";
 			}
 			else {
 				// Show AI prediction and confidence
 				document.getElementById('show-ai').style.display = "block";
+				// Show AI directions
+				document.getElementById('directions-AI').style.display = "block";
 			}
 			// Show and hide button based on model update type
 			let model_display_update = "{{display_update}}"; // 1 if update button should be shown; 0 o/w
