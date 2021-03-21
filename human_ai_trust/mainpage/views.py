@@ -124,7 +124,7 @@ def index(request):
 		context = {
 		    # 'feature_dict': feature_dict,
 		    'ml_model_prediction': ('Negative' if model_prediction == 0 else 'Positive'),
-		    'ml_confidence': str(model_confidence) + "%",
+		    'ml_confidence': str(model_display_confidence) + "%",
 		    'feature_display_dict': feature_display_dict,
 		    'user_response': new_user_response,
 		    'form1': trustForm,
@@ -272,12 +272,12 @@ class IntervalForm(forms.Form):
 	)
 	field_simple_trust = forms.ChoiceField(
 		label = "How strongly do you agree: I am confident in the AI diagnosing patients without my input.",
-		choices = ModelUserRespones.USER_TRUST_RESPONSES,
+                choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
 	field_reflective_trust = forms.ChoiceField(
 		label = "How strongly do you agree: I trust the thought process the AI system uses in computing a prediction (not necessarily agreeing with every prediction it makes).",
-		choices = ModelUserRespones.USER_TRUST_RESPONSES,
+		choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
 
