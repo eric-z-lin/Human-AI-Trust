@@ -130,7 +130,7 @@ def index(request):
 		    'ml_model_prediction': ('Negative' if model_prediction == 0 else 'Positive'),
 		    'ml_confidence': str(model_display_confidence) + "%",
 		    'ml_model_prediction_opposite': ('Negative' if model_prediction == 1 else 'Positive'),
-		    'ml_confidence_opposite': str(100 - model_display_confidence) + "%",
+		    'ml_confidence_opposite': str(round(100 - model_display_confidence, 2)) + "%",
 		    'feature_display_dict': feature_display_dict,
 		    'user_response': new_user_response,
 		    'form1': trustForm,
@@ -169,7 +169,7 @@ class InitExperimentForm(forms.Form):
 		(2, "Pho"),
 		(3, "Pasta")
 	)
-	field_ml_model_calibration = forms.ChoiceField(choices = CALIBRATION_CHOICES)
+	field_ml_model_calibration = forms.ChoiceField(label='Food (from Qualtrics survey)', choices = CALIBRATION_CHOICES)
 	#0: Control/no update, 1: instant update, 2: batched update, 3: active learning
 	UPDATE_TYPE_CHOICES =( 
 		(0, "Rome"),
@@ -177,7 +177,7 @@ class InitExperimentForm(forms.Form):
 		(2, "London"),
 		(3, "New York")
 	)
-	field_ml_model_update_type = forms.ChoiceField(choices = UPDATE_TYPE_CHOICES)
+	field_ml_model_update_type = forms.ChoiceField(label='City (from Qualtrics survey)', choices = UPDATE_TYPE_CHOICES)
 
 
 def start_experiment(request):
