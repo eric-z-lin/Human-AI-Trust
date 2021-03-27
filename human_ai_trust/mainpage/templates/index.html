@@ -63,6 +63,8 @@
 														{% csrf_token %}
 														<div class="modal-body">
 															{{ correctForm.as_p }}
+															<br>
+															<p style="color:gray; font-size: 12px;"> The system will take a couple of seconds to process your response. </p>
 														</div>
 														<div class="modal-footer">
 															<p style="color:gray; font-size: 12px;" id="update-explanation-1"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
@@ -87,7 +89,9 @@
 													<form action="{% url 'patient_result' %}" method="POST">
 														{% csrf_token %}
 														<div class="modal-body">
-															{{ correctForm.as_p }}                              
+															{{ correctForm.as_p }}   
+															<br>
+															<p style="color:gray; font-size: 12px;"> The system will take a couple of seconds to process your response. </p>
 														</div>
 														<div class="modal-footer">
 															<p style="color:gray; font-size: 12px;" id="update-explanation-2"> You can update the AI with your own diagnosis. If your diagnosis is correct, updating the AI may INCREASE its accuracy. If your diagnosis is wrong, updating the AI may DECREASE its accuracy. </p>
