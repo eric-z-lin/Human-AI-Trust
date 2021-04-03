@@ -16,7 +16,7 @@ from datetime import datetime as dt
 
 CONST_BATCH_UPDATE_FREQUENCY = 5
 MAX_TRIALS = 30
-ACTIVE_LEARNING_THRESHOLD = 75
+ACTIVE_LEARNING_THRESHOLD = 80
 
 
 
@@ -258,7 +258,7 @@ class IntervalForm(forms.Form):
 		widget = forms.RadioSelect
 	)
 	field_perceived_accuracy = forms.ChoiceField(
-		label = "How strongly do you agree: The AI understands what type of patients the AI has trouble diagnosing.",
+		label = "How strongly do you agree: The AI understands what type of patients it has trouble diagnosing.",
 		choices = ModelUserResponse.USER_TRUST_RESPONSES,
 		widget = forms.RadioSelect
 	)
