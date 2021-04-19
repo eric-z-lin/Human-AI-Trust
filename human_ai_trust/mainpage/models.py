@@ -172,7 +172,7 @@ class ModelMLModel(models.Model):
 		example_counter = 0
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
-				target = help(target.cuda(non_blocking=True))
+				target = target.cuda(non_blocking=True)
 				input = input.cuda(non_blocking=True)
 
 				bs, c, h, w = input.size()
@@ -206,7 +206,7 @@ class ModelMLModel(models.Model):
 		for e in range(epochs):
 			print('epoch',e)
 			for batchID, (varInput, target) in enumerate(dataLoaderTrain):
-				varTarget = help(target.cuda(non_blocking = True))
+				varTarget = target.cuda(non_blocking = True)
 				varInput = varInput.cuda(non_blocking = True)
 
 				varOutput = model(varInput)
@@ -244,6 +244,7 @@ class ModelMLModel(models.Model):
 
 		model.load_state_dict(new_state_dict)
 		device = torch.device("cuda:%i"%device_num)
+		torch.cuda.set_device(device)
 		model = model.to(device)
 		print('model loaded')
 
