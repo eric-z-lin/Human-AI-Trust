@@ -118,7 +118,7 @@ class ModelMLModel(models.Model):
 			model = pickle.loads(self.model_field)
 
 		dataset = ModifiedDataset([img_filename], self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False, num_workers=8, pin_memory=True)
+		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False, num_workers=24, pin_memory=True)
 
 		prediction = -1
 
@@ -166,7 +166,7 @@ class ModelMLModel(models.Model):
 				test.append(img)
 
 		dataset = ModifiedDataset(test, self.domain.transformSequence)
-		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False, num_workers=8, pin_memory=True)
+		dataLoader = DataLoader(dataset=dataset, batch_size=32, shuffle=False, num_workers=24, pin_memory=True)
 
 		correct = 0
 		example_counter = 0
@@ -194,7 +194,7 @@ class ModelMLModel(models.Model):
 		for param in model.densenet121.fc.parameters():
 		    param.requires_grad = True
 
-		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True, num_workers=8, pin_memory=True)
+		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True, num_workers=24, pin_memory=True)
 
 		model.train()
 		optimizer = optim.Adam (model.parameters(), lr=0.00001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-5)
@@ -220,8 +220,33 @@ class ModelMLModel(models.Model):
 		# model = DenseNet121(nClasses)
 		# model = gpu_model.module 
 
+		####################
+		# Load gpu model, no parallelization
+		####################
+
+		# model = DenseNet121(2).cuda()
+		# # model = torch.nn.DataParallel(model).cuda()
+		# print('model initialized')
+		# gpu_model = torch.load(model_pickle_file)
+
+		# from collections import OrderedDict
+		# new_state_dict = OrderedDict()
+		# for k, v in gpu_model.items():
+		#     name = k.replace('module.','') # remove `module.`
+		#     new_state_dict[name] = v
+
+		# model.load_state_dict(new_state_dict)
+		# device = torch.device("cuda")
+		# model = model.to(device)
+		# print('model loaded')
+
+
+		####################
+		# Load gpu model, with parallelization
+		####################
+
 		model = DenseNet121(2).cuda()
-		#model = torch.nn.DataParallel(model).cuda()
+		model = torch.nn.DataParallel(model).cuda()
 		print('model initialized')
 		gpu_model = torch.load(model_pickle_file)
 
