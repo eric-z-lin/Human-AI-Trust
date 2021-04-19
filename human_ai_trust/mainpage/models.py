@@ -107,6 +107,8 @@ class ModelMLModel(models.Model):
 	batched_accuracy_field = models.TextField(blank=True, null=True, default='{}')
 	batched_model_field = models.BinaryField(default=b'"\'"')
 
+	device_id_field = models.IntegerField()
+
 	# Metadata
 	class Meta: 
 		ordering = ['-accuracy_field', '-calibration_field', '-update_type_field', '-batched_accuracy_field']
@@ -116,6 +118,10 @@ class ModelMLModel(models.Model):
 			model = pickle.loads(self.batched_model_field)
 		else:
 			model = pickle.loads(self.model_field)
+
+		device_id = self.device_id_field
+		device = torch.device("cuda:%i"%device_id)
+		torch.cuda.set_device(device)
 
 		dataset = ModifiedDataset([img_filename], self.domain.transformSequence)
 		dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False, num_workers=24, pin_memory=True)
@@ -156,6 +162,10 @@ class ModelMLModel(models.Model):
 			model = pickle.loads(self.batched_model_field)
 		else:
 			model = pickle.loads(self.model_field)
+
+		device_id = self.device_id_field
+		device = torch.device("cuda:%i"%device_id)
+		torch.cuda.set_device(device)
 		
 		#image file name format: img_dir/case-diagnosis-name.png
 		# test = [(img if (('/'+str(case)+'-') in img)) for img in self.domain.test_imgs]
@@ -188,6 +198,10 @@ class ModelMLModel(models.Model):
 
 	def model_finetune(self, dataset, epochs=1):
 		model = pickle.loads(self.batched_model_field)
+
+		device_id = self.device_id_field
+		device = torch.device("cuda:%i"%device_id)
+		torch.cuda.set_device(device)
 		
 
 		# for param in model.densenet121.parameters():
@@ -247,6 +261,8 @@ class ModelMLModel(models.Model):
 		torch.cuda.set_device(device)
 		model = model.to(device)
 		print('model loaded')
+
+		self.device_id_field = device_num
 
 
 		####################
