@@ -228,38 +228,38 @@ class ModelMLModel(models.Model):
 		# Load gpu model, no parallelization
 		####################
 
-		# model = DenseNet121(2).cuda()
-		# # model = torch.nn.DataParallel(model).cuda()
-		# print('model initialized')
-		# gpu_model = torch.load(model_pickle_file)
+		model = DenseNet121(2).cuda()
+		# model = torch.nn.DataParallel(model).cuda()
+		print('model initialized')
+		gpu_model = torch.load(model_pickle_file)
 
-		# from collections import OrderedDict
-		# new_state_dict = OrderedDict()
-		# for k, v in gpu_model.items():
-		#     name = k.replace('module.','') # remove `module.`
-		#     new_state_dict[name] = v
+		from collections import OrderedDict
+		new_state_dict = OrderedDict()
+		for k, v in gpu_model.items():
+		    name = k.replace('module.','') # remove `module.`
+		    new_state_dict[name] = v
 
-		# model.load_state_dict(new_state_dict)
-		# device = torch.device("cuda")
-		# model = model.to(device)
-		# print('model loaded')
+		model.load_state_dict(new_state_dict)
+		device = torch.device("cuda")
+		model = model.to(device)
+		print('model loaded')
 
 
 		####################
 		# Load gpu model, with parallelization
 		####################
-		os.environ['CUDA_VISIBLE_DEVICES']="0,1,2,3,4,5,6,7"
+		# os.environ['CUDA_VISIBLE_DEVICES']="0,1,2,3,4,5,6,7"
 
-		model = DenseNet121(2).cuda()
-		model = torch.nn.DataParallel(model).cuda()
-		print('model initialized')
-		gpu_model = torch.load(model_pickle_file)
+		# model = DenseNet121(2).cuda()
+		# model = torch.nn.DataParallel(model).cuda()
+		# print('model initialized')
+		# gpu_model = torch.load(model_pickle_file)
 
-		model.load_state_dict(gpu_model)
-		device = torch.device("cuda")
-		model = model.to(device)
-		print('model loaded')
-		torch.backends.cudnn.benchmark = True
+		# model.load_state_dict(gpu_model)
+		# device = torch.device("cuda")
+		# model = model.to(device)
+		# print('model loaded')
+		# torch.backends.cudnn.benchmark = True
 		# print(model.module.state_dict())
 
 		# model = DenseNet121(nClasses).cuda()
