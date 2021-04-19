@@ -193,7 +193,7 @@ class ModelMLModel(models.Model):
 		#     param.requires_grad = True
 		# for param in model.densenet121.fc.parameters():
 		#     param.requires_grad = True
-		for param in model.parameters()
+		for param in model.parameters():
 			print(param.requires_grad)
 
 		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True, num_workers=24, pin_memory=True)
