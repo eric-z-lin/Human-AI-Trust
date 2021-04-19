@@ -255,7 +255,7 @@ class ModelMLModel(models.Model):
 		device = torch.device("cuda")
 		model = model.to(device)
 		print('model loaded')
-		print(model.module.state_dict())
+		# print(model.module.state_dict())
 
 		# model = DenseNet121(nClasses).cuda()
 		# model.load_state_dict(torch.load(model_pickle_file))
