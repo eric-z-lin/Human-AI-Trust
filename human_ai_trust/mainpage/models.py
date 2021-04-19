@@ -326,6 +326,7 @@ class ModelMLModel(models.Model):
 
 		self.model_finetune(dataset, epochs=3)
 		for case in self.domain.cases: #update the accuracy
+			print("case",case)
 			batched_accuracy[str(case)] = self.model_inference_case(case, batched=1)
 			print(case)
 			print(batched_accuracy[str(case)])
