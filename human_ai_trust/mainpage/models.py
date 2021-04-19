@@ -251,9 +251,10 @@ class ModelMLModel(models.Model):
 		gpu_model = torch.load(model_pickle_file)
 
 		model.load_state_dict(gpu_model)
-		device = torch.device("cuda:15")
+		device = torch.device("cuda")
 		model = model.to(device)
 		print('model loaded')
+		print(model.module.state_dict())
 
 		# model = DenseNet121(nClasses).cuda()
 		# model.load_state_dict(torch.load(model_pickle_file))
