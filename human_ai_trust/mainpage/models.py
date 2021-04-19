@@ -204,6 +204,7 @@ class ModelMLModel(models.Model):
 		loss = torch.nn.BCELoss(size_average = True)
 
 		for e in range(epochs):
+			print('epoch',e)
 			for batchID, (varInput, target) in enumerate(dataLoaderTrain):
 				varTarget = target.cuda(non_blocking = True)
 				varInput = varInput.cuda(non_blocking = True)
@@ -250,7 +251,7 @@ class ModelMLModel(models.Model):
 		os.environ['CUDA_VISIBLE_DEVICES']="0,1,2,3,4,5,6,7"
 
 		model = DenseNet121(2).cuda()
-		model = torch.nn.DistributedDataParallel(model).cuda()
+		model = torch.nn.DataParallel(model).cuda()
 		print('model initialized')
 		gpu_model = torch.load(model_pickle_file)
 
