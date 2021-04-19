@@ -188,13 +188,14 @@ class ModelMLModel(models.Model):
 
 	def model_finetune(self, dataset, epochs=1):
 		model = pickle.loads(self.batched_model_field)
+		
 
 		# for param in model.densenet121.parameters():
 		#     param.requires_grad = True
 		# for param in model.densenet121.fc.parameters():
 		#     param.requires_grad = True
-		for param in model.parameters():
-			print(param.requires_grad)
+		# for param in model.parameters():
+		# 	print(param.requires_grad)
 
 		dataLoaderTrain = DataLoader(dataset=dataset, batch_size=64, shuffle=True, num_workers=24, pin_memory=True)
 
@@ -249,7 +250,7 @@ class ModelMLModel(models.Model):
 		os.environ['CUDA_VISIBLE_DEVICES']="0,1,2,3,4,5,6,7"
 
 		model = DenseNet121(2).cuda()
-		model = torch.nn.DataParallel(model).cuda()
+		model = torch.nn.DistributedDataParallel(model).cuda()
 		print('model initialized')
 		gpu_model = torch.load(model_pickle_file)
 
@@ -257,6 +258,7 @@ class ModelMLModel(models.Model):
 		device = torch.device("cuda")
 		model = model.to(device)
 		print('model loaded')
+		torch.backends.cudnn.benchmark = True
 		# print(model.module.state_dict())
 
 		# model = DenseNet121(nClasses).cuda()
