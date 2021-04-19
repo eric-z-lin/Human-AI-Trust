@@ -206,7 +206,7 @@ class ModelMLModel(models.Model):
 		for e in range(epochs):
 			print('epoch',e)
 			for batchID, (varInput, target) in enumerate(dataLoaderTrain):
-				varTarget = target.cuda(non_blocking = True)
+				varTarget = help(target.cuda(non_blocking = True))
 				varInput = varInput.cuda(non_blocking = True)
 
 				varOutput = model(varInput)
