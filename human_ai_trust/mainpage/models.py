@@ -250,13 +250,7 @@ class ModelMLModel(models.Model):
 		print('model initialized')
 		gpu_model = torch.load(model_pickle_file)
 
-		from collections import OrderedDict
-		new_state_dict = OrderedDict()
-		for k, v in gpu_model.items():
-		    name = k.replace('module.','') # remove `module.`
-		    new_state_dict[name] = v
-
-		model.load_state_dict(new_state_dict)
+		model.load_state_dict(gpu_model)
 		device = torch.device("cuda")
 		model = model.to(device)
 		print('model loaded')
