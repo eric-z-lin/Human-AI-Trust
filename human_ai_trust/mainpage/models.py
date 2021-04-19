@@ -172,7 +172,7 @@ class ModelMLModel(models.Model):
 		example_counter = 0
 		with torch.no_grad():
 			for i, (input, target) in enumerate(dataLoader):
-				target = target.cuda(non_blocking=True)
+				target = help(target.cuda(non_blocking=True))
 				input = input.cuda(non_blocking=True)
 
 				bs, c, h, w = input.size()
