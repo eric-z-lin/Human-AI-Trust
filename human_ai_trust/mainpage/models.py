@@ -253,7 +253,8 @@ class ModelMLModel(models.Model):
 		    name = k.replace('module.','') # remove `module.`
 		    new_state_dict[name] = v
 
-		device_num = np.random.randint(0,8)
+		devices_available = torch.cuda.device_count()
+		device_num = np.random.randint(0,devices_available)
 		print("using device %i"%device_num)
 
 		model.load_state_dict(new_state_dict)
