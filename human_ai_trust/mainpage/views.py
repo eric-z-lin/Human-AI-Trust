@@ -530,9 +530,12 @@ def write_to_csv(user_response, full_questions):
 		user_response.field_user_calibration,
 		user_response.field_user_personal_confidence,
 		user_response.field_user_AI_confidence,
+		user_response.field_user_simple_trust,
+		user_response.field_user_reflective_trust,
 		time_passed,
 		curr_time.strftime("%m/%d/%Y, %H:%M:%S"),
-		user_response.field_experiment.field_user_name
+		user_response.field_experiment.field_user_name,
+		user_response.id
 	]
 
 	file_created = path.exists('experiments/experiment-'+str(user_response.field_experiment.id)+'.csv')
@@ -542,7 +545,8 @@ def write_to_csv(user_response, full_questions):
 			writer.writerow(["patient_num", "patient_filename","accuracy", "calibration", "display_confidence",
 				"actual_confidence", "model_prediction", "ground_truth", "user_prediction", "user_update",
 				"question_relationship", "full_questions", "question_perceived_accuracy","question_calibration",
-				"question_personal_conf","question_model_conf","time_passed","time_stamp","user_name"])
+				"question_personal_conf","question_model_conf","question_simple_trust","question_reflective_trust",
+				"time_passed","time_stamp","user_name","user_response_id"])
 		writer.writerow(fields)
 
 
