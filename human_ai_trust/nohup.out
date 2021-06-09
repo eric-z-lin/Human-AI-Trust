@@ -54360,3 +54360,130 @@ patient ./mainpage/dataset/test_dir/1-0-patient51560_study4_view1_frontal.jpg
 [23/May/2021 23:59:11] "POST /mainpage/patient_result HTTP/1.1" 200 3031
 [23/May/2021 23:59:13] "POST /mainpage/patient_result HTTP/1.1" 302 0
 [23/May/2021 23:59:13] "GET /mainpage/complete HTTP/1.1" 200 2188
+Watching for file changes with StatReloader
+[09/Jun/2021 00:37:05] "GET /mainpage/start_experiment HTTP/1.1" 200 4371
+[09/Jun/2021 00:37:05] "GET /static/css/styles.css HTTP/1.1" 200 761
+Not Found: /favicon.ico
+[09/Jun/2021 00:37:11] "GET /favicon.ico HTTP/1.1" 404 2117
+Invalid HTTP_HOST header: '54.204.102.104:80'. You may need to add '54.204.102.104' to ALLOWED_HOSTS.
+Bad Request: /HNAP1/
+Performing system checks...
+
+System check identified no issues (0 silenced).
+June 09, 2021 - 00:31:49
+Django version 3.1.3, using settings 'human_ai_trust.settings'
+Starting development server at http://0.0.0.0:80/
+Quit the server with CONTROL-C.
+checking validity
+form params
+0
+0
+asdf
+model initialized
+using device 0
+model loaded
+[09/Jun/2021 00:45:19] "POST /mainpage/start_experiment HTTP/1.1" 302 0
+cal dict
+{0: 0.05, 1: 0.05}
+session start experiment 121
+patient ./mainpage/dataset/test_dir/0-0-patient16791_study1_view1_frontal.jpg
+[09/Jun/2021 00:45:20] "GET /mainpage/ HTTP/1.1" 200 15521
+[09/Jun/2021 00:45:21] "GET /static/dataset/test_dir/0-0-patient16791_study1_view1_frontal.jpg HTTP/1.1" 200 53735
+Not Found: /favicon.ico
+[09/Jun/2021 00:45:21] "GET /favicon.ico HTTP/1.1" 404 2117
+[09/Jun/2021 00:45:26] "GET /mainpage/start_experiment HTTP/1.1" 200 4371
+[09/Jun/2021 00:45:27] "GET /mainpage/start_experiment HTTP/1.1" 200 4371
+output of model tensor([[0.2534, 0.7218]], device='cuda:0')
+model prediction:  1 , confidence:  0.7218156456947327
+index_ur_id 2878
+patient ./mainpage/dataset/test_dir/0-0-patient39155_study1_view1_frontal.jpg
+[09/Jun/2021 00:45:28] "GET /mainpage/start_experiment HTTP/1.1" 200 4371
+[09/Jun/2021 00:45:28] "GET /mainpage/ HTTP/1.1" 200 15521
+output of model tensor([[0.9172, 0.0757]], device='cuda:0')
+model prediction:  0 , confidence:  0.9171979427337646
+index_ur_id 2879
+checking validity
+form params
+1
+3
+asdf
+model initialized
+using device 0
+model loaded
+[09/Jun/2021 00:46:04] "POST /mainpage/start_experiment HTTP/1.1" 302 0
+cal dict
+{0: 0.03, 1: 0.03}
+session start experiment 122
+patient ./mainpage/dataset/test_dir/0-0-patient58610_study1_view1_frontal.jpg
+[09/Jun/2021 00:46:05] "GET /mainpage/ HTTP/1.1" 200 15520
+[09/Jun/2021 00:46:05] "GET /static/dataset/test_dir/0-0-patient58610_study1_view1_frontal.jpg HTTP/1.1" 200 49449
+[09/Jun/2021 00:46:35] "POST /mainpage/patient_result HTTP/1.1" 200 3030
+Not Found: /favicon.ico
+[09/Jun/2021 00:46:35] "GET /favicon.ico HTTP/1.1" 404 2117
+[09/Jun/2021 00:47:07] "POST /mainpage/patient_result HTTP/1.1" 302 0
+output of model tensor([[0.8923, 0.1100]], device='cuda:0')
+model prediction:  0 , confidence:  0.8923337459564209
+index_ur_id 2880
+checking validity
+reached AGREE-no-update
+user_response_id 2880
+user 0
+ml_prediction 0
+ground truth 0
+hi ./mainpage/dataset/test_dir/0-0-patient58610_study1_view1_frontal.jpg
+patient_img_result /static/dataset/test_dir/0-0-patient58610_study1_view1_frontal.jpg
+patient ./mainpage/dataset/test_dir/0-0-patient19490_study1_view1_frontal.jpg
+[09/Jun/2021 00:47:08] "GET /mainpage/ HTTP/1.1" 200 15522
+[09/Jun/2021 00:47:08] "GET /static/dataset/test_dir/0-0-patient19490_study1_view1_frontal.jpg HTTP/1.1" 200 56292
+[09/Jun/2021 00:47:27] "POST /mainpage/patient_result HTTP/1.1" 200 3030
+[09/Jun/2021 00:47:29] "POST /mainpage/patient_result HTTP/1.1" 302 0
+output of model tensor([[0.6212, 0.3391]], device='cuda:0')
+model prediction:  0 , confidence:  0.6212461590766907
+index_ur_id 2881
+checking validity
+reached AGREE-no-update
+user_response_id 2881
+user 0
+ml_prediction 0
+ground truth 0
+hi ./mainpage/dataset/test_dir/0-0-patient19490_study1_view1_frontal.jpg
+patient_img_result /static/dataset/test_dir/0-0-patient19490_study1_view1_frontal.jpg
+patient ./mainpage/dataset/test_dir/0-0-patient00216_study1_view1_frontal.jpg
+[09/Jun/2021 00:47:31] "GET /mainpage/ HTTP/1.1" 200 28812
+[09/Jun/2021 00:47:32] "GET /static/dataset/test_dir/0-0-patient00216_study1_view1_frontal.jpg HTTP/1.1" 200 58217
+[09/Jun/2021 00:48:51] "POST /mainpage/patient_result HTTP/1.1" 200 3030
+[09/Jun/2021 00:48:54] "POST /mainpage/patient_result HTTP/1.1" 302 0
+output of model tensor([[0.9936, 0.0054]], device='cuda:0')
+model prediction:  0 , confidence:  0.9935949444770813
+index_ur_id 2882
+intervalform
+checking validity
+reached AGREE-no-update
+user_response_id 2882
+user 0
+ml_prediction 0
+ground truth 0
+hi ./mainpage/dataset/test_dir/0-0-patient00216_study1_view1_frontal.jpg
+patient_img_result /static/dataset/test_dir/0-0-patient00216_study1_view1_frontal.jpg
+patient ./mainpage/dataset/test_dir/0-0-patient15893_study1_view1_frontal.jpg
+[09/Jun/2021 00:48:55] "GET /mainpage/ HTTP/1.1" 200 15525
+[09/Jun/2021 00:48:56] "GET /static/dataset/test_dir/0-0-patient15893_study1_view1_frontal.jpg HTTP/1.1" 200 50242
+output of model tensor([[0.9077, 0.0835]], device='cuda:0')
+model prediction:  0 , confidence:  0.9077190160751343
+index_ur_id 2883
+patient ./mainpage/dataset/test_dir/0-0-patient50732_study1_view1_frontal.jpg
+[09/Jun/2021 00:51:41] "GET /mainpage/ HTTP/1.1" 200 15524
+[09/Jun/2021 00:51:42] "GET /static/dataset/test_dir/0-0-patient50732_study1_view1_frontal.jpg HTTP/1.1" 200 55863
+output of model tensor([[0.9341, 0.0785]], device='cuda:0')
+model prediction:  0 , confidence:  0.934063732624054
+index_ur_id 2884
+patient ./mainpage/dataset/test_dir/0-1-patient42926_study1_view1_frontal.jpg
+[09/Jun/2021 00:51:44] "GET /mainpage/ HTTP/1.1" 200 28812
+[09/Jun/2021 00:51:44] "GET /static/dataset/test_dir/0-1-patient42926_study1_view1_frontal.jpg HTTP/1.1" 200 45420
+output of model tensor([[0.0142, 0.9865]], device='cuda:0')
+model prediction:  1 , confidence:  0.9864697456359863
+index_ur_id 2885
+intervalform
+patient ./mainpage/dataset/test_dir/0-0-patient17248_study4_view1_frontal.jpg
+[09/Jun/2021 00:51:47] "GET /mainpage/ HTTP/1.1" 200 15524
+[09/Jun/2021 00:51:47] "GET /static/dataset/test_dir/0-0-patient17248_study4_view1_frontal.jpg HTTP/1.1" 200 46020
